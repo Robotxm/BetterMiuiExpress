@@ -16,7 +16,6 @@
         android:layout_marginStart="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_actionbar_back"
-        app:title="123"
         app:titleTextAppearance="@style/MiuiStyle.ActionBar.Title.Expanded" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
