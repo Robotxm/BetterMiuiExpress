@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tv_datetime"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="07-06\n12:32" />
+
+    <com.github.vipulasri.timelineview.TimelineView
+        android:id="@+id/node"
+        android:layout_width="32dp"
+        android:layout_height="0dp"
+        android:minHeight="100dp"
+        app:endLineColor="@color/timelineLineColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tv_datetime"
+        app:layout_constraintTop_toTopOf="parent"
+        app:markerSize="12dp"
+        app:startLineColor="@color/timelineLineColor" />
+
+    <TextView
+        android:id="@+id/tv_current_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/node"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="您的快件已由【客户指定地点】代收，感谢您使用京东物流，期待再次为您服务。" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

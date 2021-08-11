@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="receivedTextColor">#CCCCCC</color>
+    <color name="timelineLineColor">#1A1A1A</color>
+    <color name="colorBackground">#000000</color>
+    <color name="currentNodeNormalTextColor">#E6E6E6</color>
+    <color name="miuiActionBarColor">#000000</color>
+    <color name="miuiDividerColor">#1A1A1A</color>
+    <color name="miuiTextInputLayoutBackground">#141414</color>
+    <color name="miuiCardBackgroundColor">#212121</color>
+    <color name="miuiSecondaryButtonBackgroundColor">#333335</color>
+    <color name="miuiSecondaryButtonTextColor">#EBEBEB</color>
+    <color name="miuiDotCurrentCenterColor">#053566</color>
+    <color name="miuiDotPreviousCenterColor">#000000</color>
+    <color name="miuiDotPreviousStrokeColor">#666666</color>
+    <color name="miuix_appcompat_icon_foreground_color">#CCCCCC</color>
+</resources>

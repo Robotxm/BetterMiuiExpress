@@ -1,0 +1,66 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.BetterMiuiExpress" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/miuiMainColor</item>
+        <item name="colorPrimaryVariant">#FFFFFF</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/miuiAccentColor</item>
+        <item name="colorSecondaryVariant">#FFFFFF</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/colorBackground</item>
+        <!-- Customize your theme here. -->
+        <item name="actionBarStyle">@style/MiuiStyle.ActionBar</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="materialButtonStyle">@style/MiuiStyle.Button</item>
+        <item name="textInputStyle">@style/MiuiStyle.TextInputLayout</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="materialCardViewStyle">@style/MiuiStyle.Card</item>
+    </style>
+
+    <style name="MiuiStyle.ActionBar" parent="Widget.MaterialComponents.Light.ActionBar.Solid">
+        <item name="elevation">0dp</item>
+        <item name="background">@color/miuiActionBarColor</item>
+        <item name="actionBarStyle">@style/MiuiStyle.ActionBar.ActionBar</item>
+    </style>
+
+    <style name="MiuiStyle.ActionBar.ActionBar">
+        <item name="android:titleTextStyle">@style/MiuiActionBar.ActionBar.TitleTextStyle</item>
+    </style>
+
+    <style name="MiuiActionBar.ActionBar.TitleTextStyle" parent="@android:style/Widget.TextView">
+        <item name="android:textSize">120sp</item>
+    </style>
+
+    <style name="MiuiStyle.Button" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <item name="shapeAppearance">@style/MiuiStyle.Button.ShapeAppearance</item>
+        <item name="android:height">60dp</item>
+        <item name="android:width">170dp</item>
+        <item name="android:textSize">17sp</item>
+    </style>
+
+    <style name="MiuiStyle.Button.ShapeAppearance">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">128dp</item>
+    </style>
+
+    <style name="MiuiStyle.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusTopStart">14dp</item>
+    </style>
+
+    <style name="MiuiStyle.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardElevation">0dp</item>
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardBackgroundColor">@color/miuiCardBackgroundColor</item>
+    </style>
+
+    <style name="MiuiStyle.ActionBar.Title.Expanded" parent="@style/TextAppearance.Design.CollapsingToolbar.Expanded">
+        <item name="android:textSize">32sp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+    </style>
+</resources>
