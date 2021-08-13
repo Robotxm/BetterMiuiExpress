@@ -1,5 +1,6 @@
 package com.moefactory.bettermiuiexpress.activity
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -38,11 +39,20 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             miuiExpress: MiuiExpress,
             urlList: ArrayList<String>?
         ) {
-            context.startActivity(
-                Intent(ACTION_GO_TO_DETAILS)
-                    .putExtra(INTENT_EXPRESS_SUMMARY, miuiExpress)
-                    .putExtra(INTENT_URL_CANDIDATES, urlList)
-            )
+            if (context is Activity) { // Click items in details activity
+                context.startActivity(
+                    Intent(ACTION_GO_TO_DETAILS)
+                        .putExtra(INTENT_EXPRESS_SUMMARY, miuiExpress)
+                        .putExtra(INTENT_URL_CANDIDATES, urlList)
+                )
+            } else { // Click items in card
+                context.startActivity(
+                    Intent(ACTION_GO_TO_DETAILS)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .putExtra(INTENT_EXPRESS_SUMMARY, miuiExpress)
+                        .putExtra(INTENT_URL_CANDIDATES, urlList)
+                )
+            }
         }
     }
 

@@ -15,7 +15,8 @@
         android:theme="@style/Theme.BetterMiuiExpress">
         <activity
             android:name=".activity.ExpressDetailsActivity"
-            android:exported="true">
+            android:exported="true"
+            android:taskAffinity="com.miui.personalassistant.express">
             <intent-filter>
                 <action android:name="com.moefactory.bettermiuiexpress.details" />
                 <category android:name="android.intent.category.DEFAULT" />
