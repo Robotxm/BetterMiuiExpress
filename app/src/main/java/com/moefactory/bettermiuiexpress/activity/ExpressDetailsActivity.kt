@@ -78,7 +78,8 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         stateView.retryResource = R.layout.empty_layout
 
         setSupportActionBar(viewBinding.mtToolbar)
-        supportActionBar?.title = miuiExpress?.companyName
+        viewBinding.actionBarTitle.text = miuiExpress?.companyName
+        viewBinding.up.setOnClickListener { onBackPressed() }
 
         viewBinding.tvMailNumber.text =
             getString(R.string.express_details_mail_number, miuiExpress!!.mailNumber)

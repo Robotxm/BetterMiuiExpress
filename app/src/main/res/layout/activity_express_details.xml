@@ -12,11 +12,35 @@
         android:layout_height="96dp"
         android:background="@color/colorBackground"
         android:elevation="0dp"
-        android:gravity="bottom"
-        android:layout_marginStart="0dp"
+        app:contentInsetStart="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@drawable/ic_actionbar_back"
-        app:titleTextAppearance="@style/MiuiStyle.ActionBar.Title.Expanded" />
+        app:titleTextAppearance="@style/MiuiStyle.ActionBar.Title.Expanded">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/up"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:src="@drawable/ic_actionbar_back"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/action_bar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:textAppearance="@style/MiuiStyle.ActionBar.Title.Expanded"
+                android:textColor="@color/miuiActionBarTitleColor"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_content"
@@ -29,7 +53,7 @@
             android:id="@+id/tv_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
+            android:layout_marginStart="28dp"
             android:layout_marginTop="8dp"
             android:fontFamily="sans-serif-medium"
             android:textColor="@color/receivedTextColor"
@@ -42,7 +66,7 @@
             android:id="@+id/tv_mail_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
+            android:layout_marginStart="28dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_status"
             tools:text="快递单号: 1234567890" />
@@ -51,7 +75,7 @@
             android:id="@+id/v_placeholder"
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:layout_marginHorizontal="24dp"
+            android:layout_marginHorizontal="28dp"
             android:layout_marginTop="32dp"
             android:background="@color/miuiDividerColor"
             app:layout_constraintTop_toBottomOf="@id/tv_mail_number" />
@@ -60,7 +84,7 @@
             android:id="@+id/tv_source"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
+            android:layout_marginStart="28dp"
             android:layout_marginTop="32dp"
             android:text="@string/data_source"
             app:layout_constraintStart_toStartOf="parent"
@@ -70,7 +94,7 @@
             android:id="@+id/rv_timeline"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginHorizontal="24dp"
+            android:layout_marginHorizontal="28dp"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="24dp"
             app:layout_constraintBottom_toBottomOf="parent"

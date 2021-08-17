@@ -20,4 +20,5 @@
     <color name="miuiDotPreviousStrokeColor">#CBCBCB</color>
     <color name="miuix_appcompat_icon_foreground_color">#191919</color>
     <color name="app_express_detail_empty_text_color">#66000000</color>
+    <color name="miuiActionBarTitleColor">#333333</color>
 </resources>
