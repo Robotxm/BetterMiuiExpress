@@ -74,11 +74,8 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             return
         }
 
-        stateView.onRetryClickListener = object : StateView.OnRetryClickListener {
-            override fun onRetryClick() {
-                viewModel.queryCompany(credential.secretKey, miuiExpress!!.mailNumber)
-            }
-        }
+        stateView.emptyResource = R.layout.empty_layout
+        stateView.retryResource = R.layout.empty_layout
 
         setSupportActionBar(viewBinding.mtToolbar)
         supportActionBar?.title = miuiExpress?.companyName
@@ -107,6 +104,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                     miuiExpress!!.mailNumber
                 )
             } else {
+                viewBinding.tvStatus.setText(R.string.empty_status)
                 stateView.showRetry()
             }
         }
