@@ -9,7 +9,7 @@
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/mt_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="128dp"
+        android:layout_height="96dp"
         android:background="@color/colorBackground"
         android:elevation="0dp"
         android:gravity="bottom"
