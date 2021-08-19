@@ -7,7 +7,7 @@
 
     <TextView
         android:id="@+id/tv_datetime"
-        android:layout_width="48dp"
+        android:layout_width="38dp"
         android:layout_height="wrap_content"
         android:gravity="end"
         app:layout_constraintBottom_toBottomOf="parent"
