@@ -14,6 +14,14 @@
     <string name="coolapk">酷安</string>
     <string name="blog">博客</string>
     <string name="jump_to_third_party_app">转到第三方应用</string>
-    <string name="empty_status">暂无信息</string>
     <string name="app_express_detail_list_empty_text">暂无运单信息，或数据同步延迟，请稍后再试\n如有需求，可自行前往相应快递官网查询</string>
+    <string name="express_state_transport">运输中</string>
+    <string name="express_state_accept">已揽件</string>
+    <string name="express_state_failed">疑难件</string>
+    <string name="express_state_sign">已签收</string>
+    <string name="express_state_reject">已拒签</string>
+    <string name="express_state_delivering">派送中</string>
+    <string name="express_state_transferred">已转寄</string>
+    <string name="express_state_in_customs">清关中</string>
+    <string name="express_state_unknown">暂无信息</string>
 </resources>

@@ -41,7 +41,7 @@ class TimeLineAdapter(
         val context = holder.itemView.context
 
         if (position == 0) {
-            if (expressDetails.status == KuaiDi100ExpressState.Trouble.categoryCode.toString()) {
+            if (expressDetails.status == KuaiDi100ExpressState.Trouble.toString()) {
                 holder.timelineNode.marker =
                     AppCompatResources.getDrawable(context, R.drawable.dot_trouble)
             } else {

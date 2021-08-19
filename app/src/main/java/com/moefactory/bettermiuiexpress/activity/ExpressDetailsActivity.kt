@@ -116,7 +116,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                     miuiExpress!!.mailNumber
                 )
             } else {
-                viewBinding.tvStatus.setText(R.string.empty_status)
+                viewBinding.tvStatus.setText(R.string.express_state_unknown)
                 stateView.showRetry()
             }
         }
@@ -134,7 +134,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 val state = KuaiDi100ExpressState.statesMap.find { state ->
                     state.categoryCode == response.state
                 }!!
-                viewBinding.tvStatus.text = state.categoryName
+                viewBinding.tvStatus.setText(state.categoryNameId)
                 expressDetailsNodes.clear()
                 expressDetailsNodes.addAll(response.data!!)
                 timelineAdapter.notifyDataSetChanged()
