@@ -2,7 +2,7 @@
 
 English | [中文](https://coolapk.com/apk/com.moefactory.bettermiuiexpress)
 
-BetterMiuiExpress is an Xposed module that prevents express details to be showed in third-party apps such as Taobao, Cainiao, etc. and shows a custom activity to display the details.
+BetterMiuiExpress is an Xposed module that prevents express details to be showed in third-party apps such as Taobao, CaiNiao, etc. and shows a custom activity to display the details.
 
 ## Prerequisites
 
@@ -14,18 +14,18 @@ BetterMiuiExpress is an Xposed module that prevents express details to be showed
 
 ## Usages
 
-Based on LSPosed
+The following instructions are based on LSPosed.
 
 - Make sure that your device has installer LSPosed or other Xposed-compatible frameworks
 - Download this module from CoolApk or compile by yourself
 - Enable this module and check MIUI Personal Assistant for scope. You may unchecked the System Apps option in the menu to find it
 - Kill the MIUI Personal Assistant apps manually in LSPosed or Settings
-- Open BetterMiuiExpress from your launcher, fill in the text inputs with your KuaiDi100 credentials and click Save
 - Swipe to MIUI Personal Assistant from the launcher. Now clicking the express items will not jump to third-party apps
+- Start from 1.1.0, you can view latest express detail in launcher.
 
-## For express delivered to Cainiao Post house
+## For express delivered to CaiNiao Post house
 
-You may need a code (取件码) to get your express from Cainiao post house. Click the menu in express details and you will find an option to jump to third-apps manually.
+You may need a code (取件码) to get your express from CaiNiao post house. Click the menu in express details and you will find an option to jump to third-apps manually.
 
 ## Contribution
 
