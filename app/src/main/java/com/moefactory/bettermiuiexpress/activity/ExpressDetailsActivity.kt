@@ -24,6 +24,7 @@ import com.moefactory.bettermiuiexpress.data.CredentialMemoryStore
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
 import com.moefactory.bettermiuiexpress.ktx.dp
 import com.moefactory.bettermiuiexpress.model.*
+import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
 import kotlinx.coroutines.flow.map
 
@@ -89,9 +90,19 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         getSavedCredential().observe(this) {
             credential = it
             if (it.customer.isNotBlank() && it.secretKey.isNotBlank()) {
-                viewModel.queryCompany(it.secretKey, miuiExpress!!.mailNumber)
-                CredentialMemoryStore.secretKey = it.secretKey
                 stateView.showLoading()
+                CredentialMemoryStore.secretKey = it.secretKey
+                // Try to convert CaiNiao company code to KuaiDi100 company code
+                val companyCode = ExpressCompanyUtils.convertCode(miuiExpress!!.companyCode)
+                if (companyCode != null) {
+                    viewModel.queryExpressDetails(
+                        credential.customer,
+                        companyCode,
+                        miuiExpress!!.mailNumber
+                    )
+                } else {
+                    viewModel.queryCompany(it.secretKey, miuiExpress!!.mailNumber)
+                }
             } else {
                 Toast.makeText(this, R.string.no_credentials, Toast.LENGTH_SHORT).show()
                 finish()
