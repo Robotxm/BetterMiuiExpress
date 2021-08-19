@@ -18,16 +18,17 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import java.text.SimpleDateFormat
-import java.util.*
 
 class MainHook : IXposedHookLoadPackage {
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-        if (lpparam.packageName != "com.miui.personalassistant") {
-            return
+        if (lpparam.packageName == "com.miui.personalassistant") {
+            hookForExpressDetails(lpparam)
+            hookForExpressCardView(lpparam)
         }
+    }
 
+    private fun hookForExpressDetails(lpparam: XC_LoadPackage.LoadPackageParam) {
         val expressIntentUtilsClass = XposedHelpers.findClass(
             "com.miui.personalassistant.express.ExpressIntentUtils",
             lpparam.classLoader
@@ -96,7 +97,9 @@ class MainHook : IXposedHookLoadPackage {
                     )
                 }
             })
+    }
 
+    private fun hookForExpressCardView(lpparam: XC_LoadPackage.LoadPackageParam) {
         val expressRepositoryClass = XposedHelpers.findClass(
             "com.miui.personalassistant.express.ExpressRepository",
             lpparam.classLoader
