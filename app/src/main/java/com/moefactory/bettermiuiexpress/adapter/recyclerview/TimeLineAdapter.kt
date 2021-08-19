@@ -13,6 +13,10 @@ import com.moefactory.bettermiuiexpress.model.KuaiDi100ExpressState
 import com.moefactory.bettermiuiexpress.model.TimelineAttributes
 import java.text.SimpleDateFormat
 import java.util.*
+import android.text.method.LinkMovementMethod
+import android.text.SpannableStringBuilder
+import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+import android.text.style.URLSpan
 
 class TimeLineAdapter(
     private val detailList: List<ExpressDetails>,
@@ -60,7 +64,21 @@ class TimeLineAdapter(
         val datetime = originalSdf.parse(expressDetails.formatedTime)
         val newDatetime = newSdf.format(datetime!!)
         holder.tvDatetime.text = newDatetime
-        holder.tvCurrentStatus.text = expressDetails.context
+
+        val currentStatus = expressDetails.context
+        val spannableStringBuilder = SpannableStringBuilder(currentStatus)
+        val regex = "1[3|4|5|7|8][0-9]\\d{8}".toRegex()
+        val matches = regex.findAll(currentStatus)
+        for (match in matches) {
+            spannableStringBuilder.setSpan(
+                URLSpan("tel:${match.value}"),
+                match.range.first,
+                match.range.last + 1,
+                SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+        holder.tvCurrentStatus.text = spannableStringBuilder
+        holder.tvCurrentStatus.movementMethod = LinkMovementMethod.getInstance()
     }
 
     override fun getItemCount() = detailList.size
