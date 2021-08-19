@@ -43,66 +43,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/til_customer"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="16dp"
-                app:boxBackgroundColor="@color/miuiTextInputLayoutBackground"
-                app:boxStrokeWidth="0dp"
-                app:hintEnabled="false"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tiet_customer"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:hint="@string/customer_field_hint" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/til_key"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="16dp"
-                app:boxBackgroundColor="@color/miuiTextInputLayoutBackground"
-                app:boxStrokeWidth="0dp"
-                app:hintEnabled="false"
-                app:layout_constraintTop_toBottomOf="@id/til_customer">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tiet_key"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:hint="@string/key_field_hint" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_save"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="12dp"
-                android:text="@string/save_config"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/til_key" />
-
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/mcv_about"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="12dp"
-                app:layout_constraintTop_toBottomOf="@id/btn_save">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"

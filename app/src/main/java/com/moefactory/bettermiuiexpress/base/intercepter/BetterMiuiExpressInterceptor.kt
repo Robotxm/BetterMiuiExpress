@@ -1,9 +1,8 @@
 package com.moefactory.bettermiuiexpress.base.intercepter
 
-import com.moefactory.bettermiuiexpress.data.CredentialMemoryStore
+import com.moefactory.bettermiuiexpress.base.app.secretKey
 import com.moefactory.bettermiuiexpress.utils.SignUtils
 import okhttp3.FormBody
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -27,7 +26,7 @@ class KuaiDi100Interceptor : Interceptor {
                         customer = originalForm.value(i)
                     }
                 }
-                val sign = SignUtils.sign(param, CredentialMemoryStore.secretKey, customer)
+                val sign = SignUtils.sign(param, secretKey, customer)
                 formBodyBuilder.add("sign", sign)
                 if (request.method == "POST") {
                     builder.method(request.method, formBodyBuilder.build())

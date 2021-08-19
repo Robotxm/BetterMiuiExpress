@@ -34,7 +34,7 @@ data class ExpressDetails(
     val context: String,
     val time: String,
     @SerialName("ftime")
-    val formatedTime: String,
+    val formattedTime: String,
     val status: String? = null,
     val areaCode: String? = null,
     val areaName: String? = null

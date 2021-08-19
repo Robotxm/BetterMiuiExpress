@@ -2,6 +2,8 @@ package com.moefactory.bettermiuiexpress.repository
 
 import androidx.lifecycle.liveData
 import com.moefactory.bettermiuiexpress.api.ApiCollection
+import com.moefactory.bettermiuiexpress.base.app.customer
+import com.moefactory.bettermiuiexpress.base.app.secretKey
 import com.moefactory.bettermiuiexpress.model.BaseKuaiDi100Response
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
@@ -14,7 +16,7 @@ import kotlinx.serialization.json.jsonPrimitive
 
 object ExpressRepository {
 
-    fun queryCompany(secretKey: String, mailNumber: String) =
+    fun queryCompany(mailNumber: String) =
         liveData<Result<List<KuaiDi100Company>>> {
             try {
                 val response = ApiCollection.kuaiDi100Api.queryExpressCompany(secretKey, mailNumber)
@@ -38,7 +40,7 @@ object ExpressRepository {
             }
         }
 
-    fun queryExpress(customer: String, companyCode: String, mailNumber: String) =
+    fun queryExpress(companyCode: String, mailNumber: String) =
         liveData<Result<BaseKuaiDi100Response>>(Dispatchers.IO) {
             val data = Json.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
             try {

@@ -59,9 +59,9 @@ class TimeLineAdapter(
                 AppCompatResources.getDrawable(context, R.drawable.dot_previous)
         }
 
-        val originalSdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA)
+        val originalSdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
         val newSdf = SimpleDateFormat("MM-dd\nHH:mm", Locale.CHINA)
-        val datetime = originalSdf.parse(expressDetails.formatedTime)
+        val datetime = originalSdf.parse(expressDetails.formattedTime)
         val newDatetime = newSdf.format(datetime!!)
         holder.tvDatetime.text = newDatetime
 

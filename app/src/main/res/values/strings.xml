@@ -1,15 +1,12 @@
 <resources>
     <string name="app_name">BetterMiuiExpress</string>
-    <string name="customer_field_hint">快递 100 公司编码 customer</string>
-    <string name="key_field_hint">快递 100 授权码 key</string>
-    <string name="save_config">保存</string>
     <string name="data_source">运单数据由快递 100 提供</string>
     <string name="express_details_mail_number">快递单号: %s</string>
     <string name="empty_tips">授权码和公司编码不能为空</string>
     <string name="save_successfully">保存成功</string>
     <string name="no_credentials">请先填写快递 100 授权码和公司编码</string>
     <string name="unexpected_error">未知错误</string>
-    <string name="copyright">MIUI 负一屏快递便捷小工具。用于禁止 MIUI 强制跳转第三方快递应用。\n申请快递 100 查询 API 后，将 customer 和 key 字段填入上方并保存，然后强制结束“智能助理”进程后，启用本模块即可开始使用。\n如需跳转其他应用查看取件码，请通过详情页右上角进入。\n\n本模块在 GPLv3 许可下开放源代码，详情请转到 GitHub 查看。\n\nCopyright © 2021 MoeFactory\nAll Rights Reserved.</string>
+    <string name="copyright">MIUI 负一屏快递便捷小工具。用于禁止 MIUI 强制跳转第三方快递应用。\n安装本模块并强制结束“智能助理”进程后，启用本模块即可开始使用。\n如需跳转其他应用查看取件码，请通过详情页右上角进入。\n\n本模块在 GPLv3 许可下开放源代码，详情请转到 GitHub 查看。\n\nCopyright © 2021 MoeFactory\nAll Rights Reserved.</string>
     <string name="github">GitHub</string>
     <string name="coolapk">酷安</string>
     <string name="blog">博客</string>

@@ -10,18 +10,18 @@ import com.moefactory.bettermiuiexpress.repository.ExpressRepository
 
 class ExpressDetailsViewModel : ViewModel() {
 
-    private val queryExpressRequest = MutableLiveData<Pair<String, KuaiDi100RequestParam>>()
+    private val queryExpressRequest = MutableLiveData<KuaiDi100RequestParam>()
     val queryExpressResult = queryExpressRequest.switchMap {
-        ExpressRepository.queryExpress(it.first, it.second.companyCode, it.second.mailNumber)
+        ExpressRepository.queryExpress(it.companyCode, it.mailNumber)
     }
 
     private val queryCompanyRequest = MutableLiveData<KuaiDi100CompanyQueryRequestParam>()
     val queryCompanyResult = queryCompanyRequest.switchMap {
-        ExpressRepository.queryCompany(it.secretKey, it.mailNumber)
+        ExpressRepository.queryCompany(it.mailNumber)
     }
 
-    fun queryExpressDetails(customer: String, secretKey: String, mailNumber: String) {
-        queryExpressRequest.value = Pair(customer, KuaiDi100RequestParam(secretKey, mailNumber))
+    fun queryExpressDetails(secretKey: String, mailNumber: String) {
+        queryExpressRequest.value = KuaiDi100RequestParam(secretKey, mailNumber)
     }
 
     fun queryCompany(secretKey: String, mailNumber: String) {

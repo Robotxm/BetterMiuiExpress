@@ -2,12 +2,24 @@ package com.moefactory.bettermiuiexpress.hook
 
 import android.content.Context
 import com.moefactory.bettermiuiexpress.activity.ExpressDetailsActivity
+import com.moefactory.bettermiuiexpress.api.ApiCollection
+import com.moefactory.bettermiuiexpress.base.app.customer
+import com.moefactory.bettermiuiexpress.base.app.secretKey
+import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
+import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
-import de.robv.android.xposed.IXposedHookLoadPackage
-import de.robv.android.xposed.XC_MethodReplacement
-import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers
+import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
+import com.moefactory.bettermiuiexpress.utils.SignUtils
+import de.robv.android.xposed.*
 import de.robv.android.xposed.callbacks.XC_LoadPackage
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainHook : IXposedHookLoadPackage {
 
@@ -50,7 +62,8 @@ class MainHook : IXposedHookLoadPackage {
                         // Store urls for future use to jump to third-party apps
                         val uriList = arrayListOf<String>()
                         for (uriEntity in uris) {
-                            val uriString = uriEntity!!.javaClass.getMethod("getLink").invoke(uriEntity) as String
+                            val uriString = uriEntity!!.javaClass.getMethod("getLink")
+                                .invoke(uriEntity) as String
                             uriList.add(uriString)
                         }
                         ExpressDetailsActivity.gotoDetailsActivity(
@@ -83,6 +96,80 @@ class MainHook : IXposedHookLoadPackage {
                     )
                 }
             })
+
+        val expressRepositoryClass = XposedHelpers.findClass(
+            "com.miui.personalassistant.express.ExpressRepository",
+            lpparam.classLoader
+        )
+        XposedHelpers.findAndHookMethod(
+            expressRepositoryClass,
+            "saveExpress",
+            java.util.List::class.java,
+            object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    runBlocking {
+                        val expressInfoList = param.args[0] as java.util.List<*>
+                        for (expressInfo in expressInfoList) {
+                            expressInfo.javaClass.getMethod(
+                                "setClickDisappear",
+                                Boolean::class.javaPrimitiveType
+                            ).invoke(expressInfo, false)
+
+                            val mailNumber = expressInfo.javaClass.getField("orderNumber")
+                                .get(expressInfo) as String
+                            val companyCode = expressInfo.javaClass.getField("companyCode")
+                                .get(expressInfo) as String
+                            var convertedCompanyCode = ExpressCompanyUtils.convertCode(companyCode)
+                            if (convertedCompanyCode == null) {
+                                convertedCompanyCode = getCompanyCode(
+                                    ApiCollection.kuaiDi100Api.queryExpressCompany(
+                                        secretKey,
+                                        mailNumber
+                                    )
+                                )
+                            }
+
+                            val data =
+                                Json.encodeToString(
+                                    KuaiDi100RequestParam(
+                                        convertedCompanyCode,
+                                        mailNumber
+                                    )
+                                )
+                            val response = ApiCollection.kuaiDi100Api.queryPackage(
+                                customer,
+                                data,
+                                SignUtils.sign(data, secretKey, customer)
+                            )
+                            val originalDetail = (expressInfo.javaClass.getField("details")
+                                .get(expressInfo) as List<*>)[0]!!
+                            originalDetail.javaClass.getMethod(
+                                "setDesc",
+                                java.lang.String::class.java
+                            ).invoke(originalDetail, response.data!![0].context)
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    private fun getCompanyCode(response: String): String {
+        when {
+            // Normal
+            response.startsWith("[") -> {
+                val result = Json.decodeFromString<List<KuaiDi100Company>>(response)
+                return result[0].companyCode
+            }
+            // Error
+            response.startsWith("{") -> {
+                val message =
+                    Json.parseToJsonElement(response).jsonObject["message"]?.jsonPrimitive?.content
+                throw Exception(message)
+            }
+            // Exception
+            else -> throw Exception("Unexpected response: $response")
+        }
     }
 
 }

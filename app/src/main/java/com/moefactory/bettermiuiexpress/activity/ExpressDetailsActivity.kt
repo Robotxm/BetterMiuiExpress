@@ -11,22 +11,19 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.nukc.stateview.StateView
 import com.github.vipulasri.timelineview.TimelineView
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.adapter.recyclerview.TimeLineAdapter
-import com.moefactory.bettermiuiexpress.base.app.dataStore
-import com.moefactory.bettermiuiexpress.base.datastore.DataStoreKeys
+import com.moefactory.bettermiuiexpress.base.app.customer
+import com.moefactory.bettermiuiexpress.base.app.secretKey
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
-import com.moefactory.bettermiuiexpress.data.CredentialMemoryStore
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
 import com.moefactory.bettermiuiexpress.ktx.dp
 import com.moefactory.bettermiuiexpress.model.*
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
-import kotlinx.coroutines.flow.map
 
 class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false) {
 
@@ -63,7 +60,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     private val viewModel by viewModels<ExpressDetailsViewModel>()
     private lateinit var timelineAdapter: TimeLineAdapter
     private val expressDetailsNodes = mutableListOf<ExpressDetails>()
-    private lateinit var credential: Credential
     private val stateView by lazy { StateView.inject(viewBinding.clContent) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,31 +83,9 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
         initTimeline()
 
-        getSavedCredential().observe(this) {
-            credential = it
-            if (it.customer.isNotBlank() && it.secretKey.isNotBlank()) {
-                stateView.showLoading()
-                CredentialMemoryStore.secretKey = it.secretKey
-                // Try to convert CaiNiao company code to KuaiDi100 company code
-                val companyCode = ExpressCompanyUtils.convertCode(miuiExpress!!.companyCode)
-                if (companyCode != null) {
-                    viewModel.queryExpressDetails(
-                        credential.customer,
-                        companyCode,
-                        miuiExpress!!.mailNumber
-                    )
-                } else {
-                    viewModel.queryCompany(it.secretKey, miuiExpress!!.mailNumber)
-                }
-            } else {
-                Toast.makeText(this, R.string.no_credentials, Toast.LENGTH_SHORT).show()
-                finish()
-            }
-        }
         viewModel.queryCompanyResult.observe(this) {
             if (it.isSuccess) {
                 viewModel.queryExpressDetails(
-                    credential.customer,
                     it.getOrNull()!![0].companyCode,
                     miuiExpress!!.mailNumber
                 )
@@ -140,6 +114,18 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 timelineAdapter.notifyDataSetChanged()
                 stateView.showContent()
             }
+        }
+
+        stateView.showLoading()
+        // Try to convert CaiNiao company code to KuaiDi100 company code
+        val companyCode = ExpressCompanyUtils.convertCode(miuiExpress!!.companyCode)
+        if (companyCode != null) {
+            viewModel.queryExpressDetails(
+                companyCode,
+                miuiExpress!!.mailNumber
+            )
+        } else {
+            viewModel.queryCompany(secretKey, miuiExpress!!.mailNumber)
         }
     }
 
@@ -203,11 +189,4 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             this.adapter = timelineAdapter
         }
     }
-
-    private fun getSavedCredential() = dataStore.data.map {
-        Credential(
-            it[DataStoreKeys.CUSTOMER] ?: "",
-            it[DataStoreKeys.SECRET_KEY] ?: ""
-        )
-    }.asLiveData()
 }
