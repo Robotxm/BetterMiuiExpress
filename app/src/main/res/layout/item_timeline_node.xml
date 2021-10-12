@@ -8,8 +8,10 @@
     <TextView
         android:id="@+id/tv_datetime"
         android:layout_width="38dp"
-        android:layout_height="wrap_content"
+        android:layout_height="36dp"
         android:gravity="end"
+        android:maxLines="2"
+        app:autoSizeTextType="uniform"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -29,14 +31,13 @@
 
     <TextView
         android:id="@+id/tv_current_status"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"
         app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/node"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="您的快件已由【客户指定地点】代收，感谢您使用京东物流，期待再次为您服务。" />
