@@ -6,11 +6,9 @@ BetterMiuiExpress is an Xposed module that prevents express details to be showed
 
 ## Prerequisites
 
-- MIUI based on Android 7.0 or above (Tested on Mi 11 Ultra with MIUI 12.5.11 based on Android 11)
+- MIUI based on Android 7.0 or above (Tested on Mi 11 Ultra with MIUI 12.5.11 based on Android 11). **Note that the latest version of MIUI implements the Personal Assistant has no support to Express, of which BetterMiuiExpress is not compatible with.**
 
 - MIUI Personal Assistant (智能助理) app installed
-
-- A pair of credentials from KuaiDi100 that contains a field called customer and the other called secret
 
 ## Usages
 
@@ -29,7 +27,7 @@ You may need a code (取件码) to get your express from CaiNiao post house. Cli
 
 ## Contribution
 
-You can submit an issues or make a merge request to contribute. **But do not submit meaningless issues, or they will be deleted.**
+You can submit issues or make merge requests to contribute. **But do not submit meaningless issues, or they will be deleted.**
 
 ## License
 
