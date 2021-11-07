@@ -1,12 +1,29 @@
 package com.moefactory.bettermiuiexpress.utils
 
-import java.math.BigInteger
 import java.security.MessageDigest
 
 object SignUtils {
-    fun sign(param: String, key: String, customer: String) = "$param$key$customer".md5()
+    fun sign(param: String, key: String, customer: String): String {
+        return md5Hash("$param$key$customer".toByteArray())
+    }
 
-    private fun String.md5() =
-        BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray())).toString(16)
-            .padStart(32, '0')
+    private fun md5Hash(message: ByteArray): String {
+        try {
+            val hash = MessageDigest.getInstance("MD5").digest(message)
+            val hex = StringBuilder(hash.size * 2)
+            for (b in hash) {
+                val i = b.toInt() and 0xFF
+                if (i < 0x10) {
+                    hex.append('0')
+                }
+                hex.append(Integer.toHexString(i).uppercase())
+            }
+
+            return hex.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return ""
+    }
 }
