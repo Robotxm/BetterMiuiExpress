@@ -140,7 +140,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         if (!urlCandidates.isNullOrEmpty()) {
             menuInflater.inflate(R.menu.details_menu, menu)
         }
@@ -157,7 +157,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                         .setData(Uri.parse(url))
                 )
                 return
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // No need to process
             }
         }
