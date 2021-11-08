@@ -21,20 +21,53 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class MainHook : IXposedHookLoadPackage {
 
+    companion object {
+        // Package name
+        private const val PA_PACKAGE_NAME = "com.miui.personalassistant"
+
+        // Fully-qualified name of ExpressIntentUtils
+        private const val PA_EXPRESS_INTENT_UTILS_OLD =
+            "com.miui.personalassistant.express.ExpressIntentUtils"
+        private const val PA_EXPRESS_INTENT_UTILS =
+            "com.miui.personalassistant.service.express.ExpressIntentUtils"
+
+        // Fully-qualified name of ExpressEntry
+        private const val PA_EXPRESS_ENTRY_OLD =
+            "com.miui.personalassistant.express.bean.ExpressEntry"
+        private const val PA_EXPRESS_ENTRY =
+            "com.miui.personalassistant.service.express.bean.ExpressEntry"
+
+        // Fully-qualified name of ExpressRepository
+        private const val PA_EXPRESS_REPOSITORY_OLD =
+            "com.miui.personalassistant.express.ExpressRepository"
+        private const val PA_EXPRESS_REPOSITOIRY =
+            "com.miui.personalassistant.service.express.ExpressRepository"
+
+        // Fully-qualified name of ExpressInfo$Detail
+        private const val PA_EXPRESS_INFO_DETAIL_OLD =
+            "com.miui.personalassistant.express.bean.ExpressInfo\$Detail"
+        private const val PA_EXPRESS_INFO_DETAIL =
+            "com.miui.personalassistant.service.express.bean.ExpressInfo\$Detail"
+    }
+
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-        if (lpparam.packageName == "com.miui.personalassistant") {
+        if (lpparam.packageName == PA_PACKAGE_NAME) {
             hookForExpressDetails(lpparam)
             hookForExpressCardView(lpparam)
         }
     }
 
     private fun hookForExpressDetails(lpparam: XC_LoadPackage.LoadPackageParam) {
+        // Detect new Personal Assistant
+        val isNewVersion =
+            XposedHelpers.findClassIfExists(PA_EXPRESS_INTENT_UTILS, lpparam.classLoader) != null
+
         val expressIntentUtilsClass = XposedHelpers.findClass(
-            "com.miui.personalassistant.express.ExpressIntentUtils",
+            if (isNewVersion) PA_EXPRESS_INTENT_UTILS else PA_EXPRESS_INTENT_UTILS_OLD,
             lpparam.classLoader
         )
         val expressEntryClass = XposedHelpers.findClass(
-            "com.miui.personalassistant.express.bean.ExpressEntry",
+            if (isNewVersion) PA_EXPRESS_ENTRY else PA_EXPRESS_ENTRY_OLD,
             lpparam.classLoader
         )
         XposedHelpers.findAndHookMethod(
@@ -59,8 +92,8 @@ class MainHook : IXposedHookLoadPackage {
                     // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
                     val uris =
                         expressEntry.javaClass.getMethod("getUris").invoke(expressEntry) as List<*>?
-                    if (uris != null && uris.isNotEmpty()) {
-                        // Store urls for future use to jump to third-party apps
+                    if (!uris.isNullOrEmpty()) {
+                        // Store urls for future use such as jumping to third-party apps
                         val uriList = arrayListOf<String>()
                         for (uriEntity in uris) {
                             val uriString = uriEntity!!.javaClass.getMethod("getLink")
@@ -100,10 +133,12 @@ class MainHook : IXposedHookLoadPackage {
     }
 
     private fun hookForExpressCardView(lpparam: XC_LoadPackage.LoadPackageParam) {
-        val expressRepositoryClass = XposedHelpers.findClass(
-            "com.miui.personalassistant.express.ExpressRepository",
-            lpparam.classLoader
-        )
+        val expressRepositoryClass = try {
+            XposedHelpers.findClass(PA_EXPRESS_REPOSITOIRY, lpparam.classLoader)
+        } catch (e: XposedHelpers.ClassNotFoundError) {
+            XposedHelpers.findClass(PA_EXPRESS_REPOSITORY_OLD, lpparam.classLoader)
+        }
+
         XposedHelpers.findAndHookMethod(
             expressRepositoryClass,
             "saveExpress",
@@ -113,11 +148,13 @@ class MainHook : IXposedHookLoadPackage {
                     runBlocking {
                         val expressInfoList = param.args[0] as java.util.List<*>
                         for (expressInfo in expressInfoList) {
+                            // Prevent detail from disappearing
                             expressInfo.javaClass.getMethod(
                                 "setClickDisappear",
                                 Boolean::class.javaPrimitiveType
                             ).invoke(expressInfo, false)
 
+                            // Get the company code
                             val mailNumber = expressInfo.javaClass.getField("orderNumber")
                                 .get(expressInfo) as String
                             val companyCode = expressInfo.javaClass.getField("companyCode")
@@ -132,6 +169,7 @@ class MainHook : IXposedHookLoadPackage {
                                 )
                             }
 
+                            // Get the details
                             val data =
                                 Json.encodeToString(
                                     KuaiDi100RequestParam(
@@ -144,12 +182,54 @@ class MainHook : IXposedHookLoadPackage {
                                 data,
                                 SignUtils.sign(data, secretKey, customer)
                             )
-                            val originalDetail = (expressInfo.javaClass.getField("details")
-                                .get(expressInfo) as List<*>)[0]!!
-                            originalDetail.javaClass.getMethod(
-                                "setDesc",
-                                java.lang.String::class.java
-                            ).invoke(originalDetail, response.data!![0].context)
+                            val originalDetails = expressInfo.javaClass.getField("details")
+                                .get(expressInfo) as? ArrayList<Any>
+                            val detailClass = try {
+                                XposedHelpers.findClass(PA_EXPRESS_INFO_DETAIL, lpparam.classLoader)
+                            } catch (e: XposedHelpers.ClassNotFoundError) {
+                                XposedHelpers.findClass(PA_EXPRESS_INFO_DETAIL_OLD, lpparam.classLoader)
+                            }
+                            when {
+                                originalDetails == null -> {
+                                    // Null list, create a new instance and put the latest detail
+                                    val newDetail = detailClass.newInstance()
+                                    newDetail.javaClass.getMethod(
+                                        "setDesc",
+                                        java.lang.String::class.java
+                                    ).invoke(newDetail, response.data!![0].context)
+                                    newDetail.javaClass.getMethod(
+                                        "setTime",
+                                        java.lang.String::class.java
+                                    ).invoke(newDetail, response.data[0].formattedTime)
+                                    val newDetails = ArrayList<Any>(1)
+                                    newDetails.add(newDetail)
+                                    expressInfo.javaClass
+                                        .getMethod("setDetails", java.util.ArrayList::class.java)
+                                        .invoke(expressInfo, newDetails)
+                                }
+                                originalDetails.isEmpty() -> {
+                                    // Empty list, put the latest detail
+                                    val newDetail = detailClass.newInstance()
+                                    newDetail.javaClass.getMethod(
+                                        "setDesc",
+                                        java.lang.String::class.java
+                                    ).invoke(newDetail, response.data!![0].context)
+                                    newDetail.javaClass.getMethod(
+                                        "setTime",
+                                        java.lang.String::class.java
+                                    ).invoke(newDetail, response.data[0].formattedTime)
+                                    originalDetails.add(newDetail)
+                                }
+                                else -> {
+                                    // Normally, the original details contains one item
+                                    val originalDetail = (expressInfo.javaClass.getField("details")
+                                        .get(expressInfo) as List<*>)[0]!!
+                                    originalDetail.javaClass.getMethod(
+                                        "setDesc",
+                                        java.lang.String::class.java
+                                    ).invoke(originalDetail, response.data!![0].context)
+                                }
+                            }
                         }
                     }
                 }
