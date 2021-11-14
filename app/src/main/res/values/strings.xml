@@ -21,4 +21,6 @@
     <string name="express_state_transferred">已转寄</string>
     <string name="express_state_in_customs">清关中</string>
     <string name="express_state_unknown">暂无信息</string>
+    <string name="express_details_title">我的快递</string>
+    <string name="express_loading">加载中</string>
 </resources>

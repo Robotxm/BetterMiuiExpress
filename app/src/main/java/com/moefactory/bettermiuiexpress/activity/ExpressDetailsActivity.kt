@@ -12,12 +12,12 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.nukc.stateview.StateView
 import com.github.vipulasri.timelineview.TimelineView
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.adapter.recyclerview.TimeLineAdapter
-import com.moefactory.bettermiuiexpress.base.app.customer
 import com.moefactory.bettermiuiexpress.base.app.secretKey
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
@@ -61,7 +61,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     private val viewModel by viewModels<ExpressDetailsViewModel>()
     private lateinit var timelineAdapter: TimeLineAdapter
     private val expressDetailsNodes = mutableListOf<ExpressDetails>()
-    private val stateView by lazy { StateView.inject(viewBinding.clContent) }
+    private val stateView by lazy { StateView.inject(viewBinding.rvTimeline) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +74,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             return
         }
 
+        stateView.loadingResource = R.layout.loading_layout
         stateView.emptyResource = R.layout.empty_layout
         stateView.retryResource = R.layout.empty_layout
 
@@ -94,6 +95,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 )
             } else {
                 viewBinding.tvStatus.setText(R.string.express_state_unknown)
+                showHideWidgets(true)
                 stateView.showRetry()
             }
         }
@@ -101,10 +103,12 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             if (it.isSuccess) {
                 val response = it.getOrNull()
                 if (response == null) {
+                    showHideWidgets(true)
                     stateView.showRetry()
                     return@observe
                 }
                 if (response.result != null) {
+                    showHideWidgets(true)
                     stateView.showRetry()
                     return@observe
                 }
@@ -115,10 +119,12 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 expressDetailsNodes.clear()
                 expressDetailsNodes.addAll(response.data!!)
                 timelineAdapter.notifyDataSetChanged()
+                showHideWidgets(true)
                 stateView.showContent()
             }
         }
 
+        showHideWidgets(false)
         stateView.showLoading()
         // Try to convert CaiNiao company code to KuaiDi100 company code
         val companyCode = ExpressCompanyUtils.convertCode(miuiExpress!!.companyCode)
@@ -191,5 +197,12 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             this.layoutManager = layoutManager
             this.adapter = timelineAdapter
         }
+    }
+
+    private fun showHideWidgets(show: Boolean) {
+        viewBinding.tvStatus.isVisible = show
+        viewBinding.tvMailNumber.isVisible = show
+        viewBinding.vPlaceholder.isVisible = show
+        viewBinding.tvSource.isVisible = show
     }
 }

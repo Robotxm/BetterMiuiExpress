@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rotate xmlns:android="http://schemas.android.com/apk/res/android" android:drawable="@drawable/miuix_sbl_loading_progress_circle" android:fromDegrees="0" android:toDegrees="1440" android:pivotX="50%" android:pivotY="50%" android:repeatCount="infinite"/>
