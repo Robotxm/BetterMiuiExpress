@@ -201,7 +201,7 @@ class MainHook : IXposedHookLoadPackage {
 
                             // Get the details
                             val data =
-                                Json.encodeToString(
+                                jsonParser.encodeToString(
                                     KuaiDi100RequestParam(
                                         convertedCompanyCode,
                                         mailNumber
@@ -271,13 +271,13 @@ class MainHook : IXposedHookLoadPackage {
         when {
             // Normal
             response.startsWith("[") -> {
-                val result = Json.decodeFromString<List<KuaiDi100Company>>(response)
+                val result = jsonParser.decodeFromString<List<KuaiDi100Company>>(response)
                 return result[0].companyCode
             }
             // Error
             response.startsWith("{") -> {
                 val message =
-                    Json.parseToJsonElement(response).jsonObject["message"]?.jsonPrimitive?.content
+                    jsonParser.parseToJsonElement(response).jsonObject["message"]?.jsonPrimitive?.content
                 throw Exception(message)
             }
             // Exception

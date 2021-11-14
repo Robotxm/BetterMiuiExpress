@@ -52,13 +52,13 @@ object ExpressRepository {
                 when {
                     // Normal
                     response.startsWith("[") -> {
-                        val result = Json.decodeFromString<List<KuaiDi100Company>>(response)
+                        val result = jsonParser.decodeFromString<List<KuaiDi100Company>>(response)
                         emit(Result.success(result))
                     }
                     // Error
                     response.startsWith("{") -> {
                         val message =
-                            Json.parseToJsonElement(response).jsonObject["message"]?.jsonPrimitive?.content
+                            jsonParser.parseToJsonElement(response).jsonObject["message"]?.jsonPrimitive?.content
                         throw Exception(message)
                     }
                     // Exception
@@ -71,7 +71,7 @@ object ExpressRepository {
 
     fun queryExpress(companyCode: String, mailNumber: String) =
         liveData(Dispatchers.IO) {
-            val data = Json.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
+            val data = jsonParser.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
             try {
                 emit(Result.success(kuaiDi100.queryPackage(customer, data)))
             } catch (e: Exception) {
