@@ -4,8 +4,7 @@ import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.moefactory.bettermiuiexpress.activity.ExpressDetailsActivity
 import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
-import com.moefactory.bettermiuiexpress.base.app.customer
-import com.moefactory.bettermiuiexpress.base.app.secretKey
+import com.moefactory.bettermiuiexpress.base.app.*
 import com.moefactory.bettermiuiexpress.base.intercepter.KuaiDi100Interceptor
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
@@ -49,35 +48,6 @@ class MainHook : IXposedHookLoadPackage {
 
     private val kuaiDi100 by lazy {
         retrofit.create(KuaiDi100Api::class.java)
-    }
-
-    companion object {
-        // Package name
-        private const val PA_PACKAGE_NAME = "com.miui.personalassistant"
-
-        // Fully-qualified name of ExpressIntentUtils
-        private const val PA_EXPRESS_INTENT_UTILS_OLD =
-            "com.miui.personalassistant.express.ExpressIntentUtils"
-        private const val PA_EXPRESS_INTENT_UTILS =
-            "com.miui.personalassistant.service.express.ExpressIntentUtils"
-
-        // Fully-qualified name of ExpressEntry
-        private const val PA_EXPRESS_ENTRY_OLD =
-            "com.miui.personalassistant.express.bean.ExpressEntry"
-        private const val PA_EXPRESS_ENTRY =
-            "com.miui.personalassistant.service.express.bean.ExpressEntry"
-
-        // Fully-qualified name of ExpressRepository
-        private const val PA_EXPRESS_REPOSITORY_OLD =
-            "com.miui.personalassistant.express.ExpressRepository"
-        private const val PA_EXPRESS_REPOSITOIRY =
-            "com.miui.personalassistant.service.express.ExpressRepository"
-
-        // Fully-qualified name of ExpressInfo$Detail
-        private const val PA_EXPRESS_INFO_DETAIL_OLD =
-            "com.miui.personalassistant.express.bean.ExpressInfo\$Detail"
-        private const val PA_EXPRESS_INFO_DETAIL =
-            "com.miui.personalassistant.service.express.bean.ExpressInfo\$Detail"
     }
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
