@@ -9,6 +9,7 @@
         android:id="@+id/tv_datetime"
         android:layout_width="38dp"
         android:layout_height="36dp"
+        android:autoSizeMaxTextSize="14sp"
         android:gravity="end"
         android:maxLines="2"
         app:autoSizeTextType="uniform"

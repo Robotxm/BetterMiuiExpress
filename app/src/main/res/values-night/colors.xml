@@ -11,7 +11,7 @@
     <color name="miuiSecondaryButtonBackgroundColor">#333335</color>
     <color name="miuiSecondaryButtonTextColor">#EBEBEB</color>
     <color name="miuiDotCurrentCenterColor">#053566</color>
-    <color name="miuiDotPreviousCenterColor">#000000</color>
+    <color name="miuiDotPreviousCenterColor">#FFFFFF</color>
     <color name="miuiDotPreviousStrokeColor">#666666</color>
     <color name="miuix_appcompat_icon_foreground_color">#CCCCCC</color>
     <color name="app_express_detail_empty_text_color">#80FFFFFF</color>
