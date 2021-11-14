@@ -1,6 +1,7 @@
 package com.moefactory.bettermiuiexpress.activity
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -64,6 +65,8 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        setTaskDescription(ActivityManager.TaskDescription("我的快递"))
 
         if (miuiExpress == null) {
             Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show()
