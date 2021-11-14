@@ -36,6 +36,7 @@ object ExpressRepository {
 
     private val retrofit by lazy {
         Retrofit.Builder()
+            .baseUrl("https://poll.kuaidi100.com/")
             .addConverterFactory(jsonParser.asConverterFactory("application/json".toMediaType()))
             .client(okHttpClient)
             .build()
