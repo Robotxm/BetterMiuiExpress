@@ -66,7 +66,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setTaskDescription(ActivityManager.TaskDescription("我的快递"))
+        setTaskDescription(ActivityManager.TaskDescription(getString(R.string.express_details_title)))
 
         if (miuiExpress == null) {
             Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show()
