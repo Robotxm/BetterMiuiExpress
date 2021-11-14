@@ -183,6 +183,17 @@ class MainHook : IXposedHookLoadPackage {
                                 data,
                                 SignUtils.sign(data, secretKey, customer)
                             )
+                            // I don't know why the result is empty sometimes.
+                            // Just ignore and skip this item.
+                            // TODO: Wait for future fix
+                            if (response.data.isNullOrEmpty()) {
+                                // Revert
+                                expressInfo.javaClass.getMethod(
+                                    "setClickDisappear",
+                                    Boolean::class.javaPrimitiveType
+                                ).invoke(expressInfo, true)
+                                continue
+                            }
                             val originalDetails = expressInfo.javaClass.getField("details")
                                 .get(expressInfo) as? ArrayList<Any>
                             val detailClass = try {
@@ -197,7 +208,7 @@ class MainHook : IXposedHookLoadPackage {
                                     newDetail.javaClass.getMethod(
                                         "setDesc",
                                         java.lang.String::class.java
-                                    ).invoke(newDetail, response.data!![0].context)
+                                    ).invoke(newDetail, response.data[0].context)
                                     newDetail.javaClass.getMethod(
                                         "setTime",
                                         java.lang.String::class.java
@@ -214,7 +225,7 @@ class MainHook : IXposedHookLoadPackage {
                                     newDetail.javaClass.getMethod(
                                         "setDesc",
                                         java.lang.String::class.java
-                                    ).invoke(newDetail, response.data!![0].context)
+                                    ).invoke(newDetail, response.data[0].context)
                                     newDetail.javaClass.getMethod(
                                         "setTime",
                                         java.lang.String::class.java
@@ -228,7 +239,7 @@ class MainHook : IXposedHookLoadPackage {
                                     originalDetail?.javaClass?.getMethod(
                                         "setDesc",
                                         java.lang.String::class.java
-                                    )?.invoke(originalDetail, response.data!![0].context)
+                                    )?.invoke(originalDetail, response.data[0].context)
                                 }
                             }
                         }
