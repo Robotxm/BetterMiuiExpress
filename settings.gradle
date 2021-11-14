@@ -9,4 +9,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "BetterMiuiExpress"
 include ':app'
-include ':httputils'

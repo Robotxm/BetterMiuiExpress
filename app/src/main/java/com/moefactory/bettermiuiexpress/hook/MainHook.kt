@@ -1,10 +1,12 @@
 package com.moefactory.bettermiuiexpress.hook
 
 import android.content.Context
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.moefactory.bettermiuiexpress.activity.ExpressDetailsActivity
-import com.moefactory.bettermiuiexpress.api.ApiCollection
+import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
 import com.moefactory.bettermiuiexpress.base.app.customer
 import com.moefactory.bettermiuiexpress.base.app.secretKey
+import com.moefactory.bettermiuiexpress.base.intercepter.KuaiDi100Interceptor
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
@@ -18,8 +20,36 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
 
 class MainHook : IXposedHookLoadPackage {
+
+    private val jsonParser by lazy {
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
+    }
+
+    private val okHttpClient by lazy {
+        OkHttpClient.Builder()
+            .retryOnConnectionFailure(true)
+            .addInterceptor(KuaiDi100Interceptor())
+            .build()
+    }
+
+    private val retrofit by lazy {
+        Retrofit.Builder()
+            .addConverterFactory(jsonParser.asConverterFactory("application/json".toMediaType()))
+            .client(okHttpClient)
+            .build()
+    }
+
+    private val kuaiDi100 by lazy {
+        retrofit.create(KuaiDi100Api::class.java)
+    }
 
     companion object {
         // Package name
@@ -162,7 +192,7 @@ class MainHook : IXposedHookLoadPackage {
                             var convertedCompanyCode = ExpressCompanyUtils.convertCode(companyCode)
                             if (convertedCompanyCode == null) {
                                 convertedCompanyCode = getCompanyCode(
-                                    ApiCollection.kuaiDi100Api.queryExpressCompany(
+                                    kuaiDi100.queryExpressCompany(
                                         secretKey,
                                         mailNumber
                                     )
@@ -177,7 +207,7 @@ class MainHook : IXposedHookLoadPackage {
                                         mailNumber
                                     )
                                 )
-                            val response = ApiCollection.kuaiDi100Api.queryPackage(
+                            val response = kuaiDi100.queryPackage(
                                 customer,
                                 data,
                                 SignUtils.sign(data, secretKey, customer)
@@ -223,11 +253,11 @@ class MainHook : IXposedHookLoadPackage {
                                 else -> {
                                     // Normally, the original details contains one item
                                     val originalDetail = (expressInfo.javaClass.getField("details")
-                                        .get(expressInfo) as List<*>)[0]!!
-                                    originalDetail.javaClass.getMethod(
+                                        .get(expressInfo) as List<*>)[0]
+                                    originalDetail?.javaClass?.getMethod(
                                         "setDesc",
                                         java.lang.String::class.java
-                                    ).invoke(originalDetail, response.data!![0].context)
+                                    )?.invoke(originalDetail, response.data!![0].context)
                                 }
                             }
                         }

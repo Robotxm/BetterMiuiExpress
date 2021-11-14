@@ -1,10 +1,11 @@
 package com.moefactory.bettermiuiexpress.repository
 
 import androidx.lifecycle.liveData
-import com.moefactory.bettermiuiexpress.api.ApiCollection
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
 import com.moefactory.bettermiuiexpress.base.app.customer
 import com.moefactory.bettermiuiexpress.base.app.secretKey
-import com.moefactory.bettermiuiexpress.model.BaseKuaiDi100Response
+import com.moefactory.bettermiuiexpress.base.intercepter.KuaiDi100Interceptor
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
 import kotlinx.coroutines.Dispatchers
@@ -13,13 +14,41 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
 
 object ExpressRepository {
 
+    private val jsonParser by lazy {
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
+    }
+
+    private val okHttpClient by lazy {
+        OkHttpClient.Builder()
+            .retryOnConnectionFailure(true)
+            .addInterceptor(KuaiDi100Interceptor())
+            .build()
+    }
+
+    private val retrofit by lazy {
+        Retrofit.Builder()
+            .addConverterFactory(jsonParser.asConverterFactory("application/json".toMediaType()))
+            .client(okHttpClient)
+            .build()
+    }
+
+    private val kuaiDi100 by lazy {
+        retrofit.create(KuaiDi100Api::class.java)
+    }
+
     fun queryCompany(mailNumber: String) =
-        liveData<Result<List<KuaiDi100Company>>> {
+        liveData {
             try {
-                val response = ApiCollection.kuaiDi100Api.queryExpressCompany(secretKey, mailNumber)
+                val response = kuaiDi100.queryExpressCompany(secretKey, mailNumber)
                 when {
                     // Normal
                     response.startsWith("[") -> {
@@ -41,10 +70,10 @@ object ExpressRepository {
         }
 
     fun queryExpress(companyCode: String, mailNumber: String) =
-        liveData<Result<BaseKuaiDi100Response>>(Dispatchers.IO) {
+        liveData(Dispatchers.IO) {
             val data = Json.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
             try {
-                emit(Result.success(ApiCollection.kuaiDi100Api.queryPackage(customer, data)))
+                emit(Result.success(kuaiDi100.queryPackage(customer, data)))
             } catch (e: Exception) {
                 emit(Result.failure(e))
             }
