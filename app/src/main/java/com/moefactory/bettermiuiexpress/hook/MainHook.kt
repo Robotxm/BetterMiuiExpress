@@ -10,7 +10,6 @@ import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
-import com.moefactory.bettermiuiexpress.utils.SignUtils
 import de.robv.android.xposed.*
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import kotlinx.coroutines.runBlocking
@@ -181,11 +180,7 @@ class MainHook : IXposedHookLoadPackage {
                                         mailNumber
                                     )
                                 )
-                            val response = kuaiDi100.queryPackage(
-                                customer,
-                                data,
-                                SignUtils.sign(data, secretKey, customer)
-                            )
+                            val response = kuaiDi100.queryPackage(customer, data)
                             // Ignore invalid result
                             if (response.data.isNullOrEmpty()) {
                                 continue

@@ -21,20 +21,4 @@ interface KuaiDi100Api {
         @Field("key") secretKey: String,
         @Field("num") mailNumber: String
     ): String
-
-    @POST("https://poll.kuaidi100.com/poll/query.do")
-    @FormUrlEncoded
-    suspend fun queryPackage(
-        @Field("customer") customer: String,
-        @Field("param") param: String,
-        @Field("sign") sign: String
-    ): BaseKuaiDi100Response
-
-    @POST("https://www.kuaidi100.com/autonumber/auto")
-    @FormUrlEncoded
-    suspend fun queryExpressCompany(
-        @Field("key") secretKey: String,
-        @Field("num") mailNumber: String,
-        @Field("sign") sign: String
-    ): String
 }
