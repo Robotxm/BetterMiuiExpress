@@ -1,7 +1,6 @@
 package com.moefactory.bettermiuiexpress.api
 
 import com.moefactory.bettermiuiexpress.model.BaseKuaiDi100Response
-import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
