@@ -149,16 +149,19 @@ class MainHook : IXposedHookLoadPackage {
                     runBlocking {
                         val expressInfoList = param.args[0] as java.util.List<*>
                         for (expressInfo in expressInfoList) {
-                            // Prevent detail from disappearing
-                            expressInfo.javaClass.getMethod(
-                                "setClickDisappear",
-                                Boolean::class.javaPrimitiveType
-                            ).invoke(expressInfo, false)
+                            // Skip packages from Xiaomi and JingDong
+                            val provider = expressInfo.javaClass.getMethod("getProvider")
+                                .invoke(expressInfo) as? String
+                            val isXiaomi = provider == "Miguo" || provider == "MiMall"
+                            val companyCode = expressInfo.javaClass.getField("companyCode")
+                                .get(expressInfo) as String
+                            val isJingDong = companyCode == "JDKD"
+                            if (isXiaomi || isJingDong) {
+                                continue
+                            }
 
                             // Get the company code
                             val mailNumber = expressInfo.javaClass.getField("orderNumber")
-                                .get(expressInfo) as String
-                            val companyCode = expressInfo.javaClass.getField("companyCode")
                                 .get(expressInfo) as String
                             var convertedCompanyCode = ExpressCompanyUtils.convertCode(companyCode)
                             if (convertedCompanyCode == null) {
@@ -183,15 +186,8 @@ class MainHook : IXposedHookLoadPackage {
                                 data,
                                 SignUtils.sign(data, secretKey, customer)
                             )
-                            // I don't know why the result is empty sometimes.
-                            // Just ignore and skip this item.
-                            // TODO: Wait for future fix
+                            // Ignore invalid result
                             if (response.data.isNullOrEmpty()) {
-                                // Revert
-                                expressInfo.javaClass.getMethod(
-                                    "setClickDisappear",
-                                    Boolean::class.javaPrimitiveType
-                                ).invoke(expressInfo, true)
                                 continue
                             }
                             val originalDetails = expressInfo.javaClass.getField("details")
@@ -242,6 +238,11 @@ class MainHook : IXposedHookLoadPackage {
                                     )?.invoke(originalDetail, response.data[0].context)
                                 }
                             }
+                            // Prevent detail from disappearing
+                            expressInfo.javaClass.getMethod(
+                                "setClickDisappear",
+                                Boolean::class.javaPrimitiveType
+                            ).invoke(expressInfo, false)
                         }
                     }
                 }
