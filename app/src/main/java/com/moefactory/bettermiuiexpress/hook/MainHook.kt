@@ -185,6 +185,12 @@ class MainHook : IXposedHookLoadPackage {
                             if (response.data.isNullOrEmpty()) {
                                 continue
                             }
+
+                            // Prevent detail from disappearing
+                            expressInfo.javaClass.getMethod(
+                                "setClickDisappear",
+                                Boolean::class.javaPrimitiveType
+                            ).invoke(expressInfo, false)
                             val originalDetails = expressInfo.javaClass.getField("details")
                                 .get(expressInfo) as? ArrayList<Any>
                             val detailClass = try {
@@ -233,11 +239,6 @@ class MainHook : IXposedHookLoadPackage {
                                     )?.invoke(originalDetail, response.data[0].context)
                                 }
                             }
-                            // Prevent detail from disappearing
-                            expressInfo.javaClass.getMethod(
-                                "setClickDisappear",
-                                Boolean::class.javaPrimitiveType
-                            ).invoke(expressInfo, false)
                         }
                     }
                 }
