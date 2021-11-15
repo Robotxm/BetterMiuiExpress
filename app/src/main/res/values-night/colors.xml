@@ -3,7 +3,6 @@
     <color name="receivedTextColor">#CCCCCC</color>
     <color name="timelineLineColor">#1A1A1A</color>
     <color name="colorBackground">#000000</color>
-    <color name="currentNodeNormalTextColor">#E6E6E6</color>
     <color name="miuiActionBarColor">#000000</color>
     <color name="miuiDividerColor">#1A1A1A</color>
     <color name="miuiTextInputLayoutBackground">#141414</color>
@@ -16,4 +15,6 @@
     <color name="miuix_appcompat_icon_foreground_color">#CCCCCC</color>
     <color name="app_express_detail_empty_text_color">#80FFFFFF</color>
     <color name="miuiActionBarTitleColor">#CCCCCC</color>
+    <color name="pa_express_progress_item_first_text">#E6FFFFFF</color>
+    <color name="pa_express_progress_item_text">#66FFFFFF</color>
 </resources>

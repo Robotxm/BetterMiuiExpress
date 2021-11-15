@@ -52,11 +52,13 @@ class TimeLineAdapter(
                 holder.timelineNode.marker =
                     AppCompatResources.getDrawable(context, R.drawable.dot_current)
             }
-            holder.tvDatetime.setTextColor(context.getColor(R.color.currentNodeNormalTextColor))
-            holder.tvCurrentStatus.setTextColor(context.getColor(R.color.currentNodeNormalTextColor))
+            holder.tvDatetime.setTextColor(context.getColor(R.color.pa_express_progress_item_first_text))
+            holder.tvCurrentStatus.setTextColor(context.getColor(R.color.pa_express_progress_item_first_text))
         } else {
             holder.timelineNode.marker =
                 AppCompatResources.getDrawable(context, R.drawable.dot_previous)
+            holder.tvDatetime.setTextColor(context.getColor(R.color.pa_express_progress_item_text))
+            holder.tvCurrentStatus.setTextColor(context.getColor(R.color.pa_express_progress_item_text))
         }
 
         val originalSdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
