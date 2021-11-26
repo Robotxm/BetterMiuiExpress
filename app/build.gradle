@@ -16,8 +16,8 @@ android {
         applicationId "com.moefactory.bettermiuiexpress"
         minSdk 24
         targetSdk 30
-        versionCode 8
-        versionName "1.2.1"
+        versionCode 9
+        versionName "1.2.2"
         resConfigs 'zh'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
