@@ -4,6 +4,8 @@ package com.moefactory.bettermiuiexpress.base.app
 const val secretKey = "NECqxUrS2626"
 const val customer = "157E92B1594C114CA2377A627EC0892F"
 
+const val BME_MAIN_ACTIVITY_ALIAS = "com.moefactory.bettermiuiexpress.activity.MainActivityAlias"
+
 // Package name
 const val PA_PACKAGE_NAME = "com.miui.personalassistant"
 
