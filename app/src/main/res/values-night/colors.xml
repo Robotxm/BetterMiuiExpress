@@ -16,6 +16,7 @@
     <color name="miuiActionBarTitleColor">#CCCCCC</color>
     <color name="pa_express_progress_item_first_text">#E6FFFFFF</color>
     <color name="pa_express_progress_item_text">#66FFFFFF</color>
+    <color name="pa_express_detail_split_line_color">#1AFFFFFF</color>
     <color name="pa_express_detail_provider_color">#66FFFFFF</color>
     <color name="pa_express_detail_express_number_color">#80FFFFFF</color>
 </resources>

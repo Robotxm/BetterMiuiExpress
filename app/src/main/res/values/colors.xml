@@ -22,7 +22,7 @@
     <color name="pa_express_progress_item_first_text">#000000</color>
     <color name="pa_express_progress_item_text">#66000000</color>
     <color name="miuiUrlSpanColor">#0000FF</color>
-    <color name="pa_express_detail_split_line_color">#1AFFFFFF</color>
+    <color name="pa_express_detail_split_line_color">#1A000000</color>
     <color name="pa_express_detail_provider_color">#66000000</color>
     <color name="pa_express_detail_express_number_color">#99000000</color>
 </resources>
