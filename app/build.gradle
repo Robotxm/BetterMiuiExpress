@@ -59,4 +59,5 @@ dependencies {
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.0'
     implementation 'com.github.nukc:StateView:v3.0.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:2.9.0'
 }

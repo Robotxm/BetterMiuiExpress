@@ -21,6 +21,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 class MainHook : IXposedHookLoadPackage {
 
@@ -41,6 +42,7 @@ class MainHook : IXposedHookLoadPackage {
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://poll.kuaidi100.com/")
+            .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(jsonParser.asConverterFactory("application/json".toMediaType()))
             .client(okHttpClient)
             .build()

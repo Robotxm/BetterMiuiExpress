@@ -17,6 +17,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 object ExpressRepository {
 
@@ -37,6 +38,7 @@ object ExpressRepository {
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://poll.kuaidi100.com/")
+            .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(jsonParser.asConverterFactory("application/json".toMediaType()))
             .client(okHttpClient)
             .build()
@@ -66,6 +68,7 @@ object ExpressRepository {
                     else -> throw Exception("Unexpected response: $response")
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 emit(Result.failure(e))
             }
         }
@@ -76,6 +79,7 @@ object ExpressRepository {
             try {
                 emit(Result.success(kuaiDi100.queryPackage(customer, data)))
             } catch (e: Exception) {
+                e.printStackTrace()
                 emit(Result.failure(e))
             }
         }
