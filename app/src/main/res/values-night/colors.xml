@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="receivedTextColor">#CCCCCC</color>
+
     <color name="timelineLineColor">#1A1A1A</color>
+
     <color name="colorBackground">#000000</color>
+
     <color name="miuiActionBarColor">#000000</color>
+
     <color name="miuiTextInputLayoutBackground">#141414</color>
     <color name="miuiCardBackgroundColor">#212121</color>
+
     <color name="miuiSecondaryButtonBackgroundColor">#333335</color>
     <color name="miuiSecondaryButtonTextColor">#EBEBEB</color>
+
     <color name="miuiDotCurrentCenterColor">#053566</color>
     <color name="miuiDotPreviousCenterColor">#FFFFFF</color>
     <color name="miuiDotPreviousStrokeColor">#666666</color>
+
     <color name="miuix_appcompat_icon_foreground_color">#CCCCCC</color>
     <color name="app_express_detail_empty_text_color">#80FFFFFF</color>
     <color name="miuiActionBarTitleColor">#CCCCCC</color>
@@ -19,4 +26,6 @@
     <color name="pa_express_detail_split_line_color">#1AFFFFFF</color>
     <color name="pa_express_detail_provider_color">#66FFFFFF</color>
     <color name="pa_express_detail_express_number_color">#80FFFFFF</color>
+
+    <color name="blackTextColor">#FFFFFF</color>
 </resources>

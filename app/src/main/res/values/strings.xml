@@ -6,7 +6,13 @@
     <string name="save_successfully">保存成功</string>
     <string name="no_credentials">请先填写快递 100 授权码和公司编码</string>
     <string name="unexpected_error">未知错误</string>
-    <string name="copyright">MIUI 负一屏快递便捷小工具。用于禁止 MIUI 强制跳转第三方快递应用。\n安装本模块并强制结束“智能助理”进程后，启用本模块即可开始使用。\n如需跳转其他应用查看取件码，请通过详情页右上角进入。\n\n本模块在 GPLv3 许可下开放源代码，详情请转到 GitHub 查看。\n\nCopyright © 2021 MoeFactory\nAll Rights Reserved.</string>
+    <string name="copyright">MIUI 负一屏快递便捷小工具。用于禁止 MIUI 强制跳转第三方快递应用。\n安装本模块并强制结束“智能助理”进程后，启用本模块即可开始使用。\n如需跳转其他应用查看取件码，请通过详情页右上角进入。\n\n本模块在 GPLv3 许可下开放源代码，详情请转到 GitHub 查看。\n\nCopyright © 2021–2022 MoeFactory\nAll Rights Reserved.</string>
+    <string name="yuki">此模块使用 YukiHookAPI 构建</string>
+    <string name="yuki_version">YukiHookAPI 版本: %1$s (%2$d)</string>
+    <string name="inactive">模块未激活</string>
+    <string name="inactive_description">请检查是否在 Hook 框架中启用了本模块</string>
+    <string name="active">模块已激活</string>
+    <string name="active_hook_framework_version">Hook 框架: %1$s (API %2$d)</string>
     <string name="github">GitHub</string>
     <string name="coolapk">酷安</string>
     <string name="blog">博客</string>
