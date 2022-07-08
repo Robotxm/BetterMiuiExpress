@@ -18,9 +18,8 @@ The following instructions are based on LSPosed.
 - Download this module from CoolApk or compile by yourself
 - Enable this module and check MIUI Personal Assistant as the scope. You may unchecked the System Apps option in the menu to find it
 - Kill the MIUI Personal Assistant apps manually in LSPosed or Settings
-- Swipe to MIUI Personal Assistant from the launcher. Now clicking the express items will not lead to jumping to third-party apps
-- Starting from 1.1.0, you can view the latest express detail in launcher
-- Starting from 1.2.0, this module supports the latest Personal Assistant
+- Swipe to MIUI Personal Assistant in the launcher. Now clicking the express items will not lead to jumping to third-party apps
+- The latest express details will be showed in the app widget
 
 ## For express delivered to CaiNiao Post House
 

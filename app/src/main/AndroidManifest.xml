@@ -29,10 +29,10 @@
             android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="Make MIUI Express jump to this app instead of TaoBao or CaiNiao." />
+            android:value="Prevent Express entry in MIUI Personal Assistant calling Alibaba apps." />
         <meta-data
             android:name="xposedminversion"
-            android:value="82" />
+            android:value="93" />
         <meta-data
             android:name="xposedscope"
             android:resource="@array/xposed_scope" />

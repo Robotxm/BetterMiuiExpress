@@ -42,31 +42,3 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
-
-# Xposed
--keep class * implements de.robv.android.xposed.IXposedHookZygoteInit
--keep class * implements de.robv.android.xposed.IXposedHookLoadPackage
--keep class * implements de.robv.android.xposed.IXposedHookInitPackageResources
--keep class * extends de.robv.android.xposed.XC_MethodHook
--keep class * extends de.robv.android.xposed.XC_MethodReplacement
-
--keepclassmembers class * implements de.robv.android.xposed.IXposedHookZygoteInit {
-   public void initZygote(de.robv.android.xposed.IXposedHookZygoteInit.StartupParam);
-}
-
--keepclassmembers class * implements de.robv.android.xposed.IXposedHookLoadPackage {
-   public void handleLoadPackage(de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam);
-}
-
--keepclassmembers class * implements de.robv.android.xposed.IXposedHookInitPackageResources {
-   public void handleInitPackageResources(de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam);
-}
-
--keepclassmembers class * extends de.robv.android.xposed.XC_MethodHook {
-   protected void beforeHookedMethod(de.robv.android.xposed.XC_MethodHook.MethodHookParam);
-   protected void afterHookedMethod(de.robv.android.xposed.XC_MethodHook.MethodHookParam);
-}
-
--keepclassmembers class * extends de.robv.android.xposed.XC_MethodReplacement {
-   protected void replaceHookedMethod(de.robv.android.xposed.XC_MethodHook.MethodHookParam);
-}

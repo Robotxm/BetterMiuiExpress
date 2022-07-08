@@ -1,10 +1,10 @@
 package com.moefactory.bettermiuiexpress.base.app
 
-import android.app.Application
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import com.highcapable.yukihookapi.hook.xposed.application.ModuleApplication
 
-class BetterMiuiExpress : Application() {
+class BetterMiuiExpress : ModuleApplication() {
 
     override fun onCreate() {
         super.onCreate()

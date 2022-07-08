@@ -3,6 +3,7 @@ package com.moefactory.bettermiuiexpress.activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import com.highcapable.yukihookapi.YukiHookAPI
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityMainBinding
 
