@@ -32,3 +32,7 @@ You can submit issues or make merge requests to contribute. **But do not submit 
 ## License
 
 BetterMiuiExpress is licensed under the GPLv3. For details, check the license in the repository.
+
+## Acknowledgement
+
+BetterMiuiExpress is now based on [YukiHookAPI](https://github.com/fankes/YukiHookAPI).
