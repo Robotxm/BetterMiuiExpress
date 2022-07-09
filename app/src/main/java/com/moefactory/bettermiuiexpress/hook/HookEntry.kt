@@ -13,15 +13,11 @@ import com.moefactory.bettermiuiexpress.activity.ExpressDetailsActivity
 import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
 import com.moefactory.bettermiuiexpress.base.app.*
 import com.moefactory.bettermiuiexpress.base.intercepter.KuaiDi100Interceptor
-import com.moefactory.bettermiuiexpress.ktx.ContextType
-import com.moefactory.bettermiuiexpress.ktx.IntentType
-import com.moefactory.bettermiuiexpress.ktx.JavaListClass
-import com.moefactory.bettermiuiexpress.ktx.ViewType
+import com.moefactory.bettermiuiexpress.ktx.*
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
-import de.robv.android.xposed.XposedHelpers
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -74,8 +70,9 @@ class HookEntry : IYukiHookXposedInit {
             }
             // Error
             response.startsWith("{") -> {
-                val message =
-                    jsonParser.parseToJsonElement(response).jsonObject["message"]?.jsonPrimitive?.content
+                val message = jsonParser.parseToJsonElement(response)
+                    .jsonObject["message"]
+                    ?.jsonPrimitive?.content
                 throw Exception(message)
             }
             // Exception
@@ -90,102 +87,50 @@ class HookEntry : IYukiHookXposedInit {
 
     override fun onHook() = encase {
         loadApp(name = PA_PACKAGE_NAME) {
-            val expressEntryClass = try {
-                PA_EXPRESS_ENTRY.clazz
-            } catch (_: Exception) {
-                PA_EXPRESS_ENTRY_OLD.clazz
-            }
+            val expressEntryClass = if (PA_EXPRESS_ENTRY.hasClass) PA_EXPRESS_ENTRY.clazz
+            else PA_EXPRESS_ENTRY_OLD.clazz
 
             // Old version
-            // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2) {
-            findClass(PA_EXPRESS_INTENT_UTILS, PA_EXPRESS_INTENT_UTILS_OLD)
-                .hook {
-                    injectMember {
-                        method {
-                            name = "gotoExpressDetailPage"
-                            param(ContextType, expressEntryClass, BooleanType, BooleanType)
-                        }.ignoredError()
-                        replaceAny {
-                            val context = args().first().cast<Context>()!!
-                            val expressEntry = args(index = 1).any()!!
-                            val companyCode = expressEntry.javaClass.getField("companyCode")
-                                .get(expressEntry) as String
-                            val companyName = expressEntry.javaClass.getField("companyName")
-                                .get(expressEntry) as String
-                            val mailNumber =
-                                expressEntry.javaClass.getField("orderNumber").get(expressEntry) as String
-                            val phoneNumber =
-                                expressEntry.javaClass.getField("phone").get(expressEntry) as? String
-                            // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
-                            val uris =
-                                expressEntry.javaClass.getMethod("getUris").invoke(expressEntry) as List<*>?
-                            if (!uris.isNullOrEmpty()) {
-                                // Store urls for future use such as jumping to third-party apps
-                                val uriList = arrayListOf<String>()
-                                for (uriEntity in uris) {
-                                    val uriString = uriEntity!!.javaClass.getMethod("getLink")
-                                        .invoke(uriEntity) as String
-                                    uriList.add(uriString)
-                                }
-                                ExpressDetailsActivity.gotoDetailsActivity(
-                                    context,
-                                    MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
-                                    uriList
-                                )
-                                return@replaceAny null
-                            } else {
-                                val provider = expressEntry.javaClass.getMethod("getProvider")
-                                    .invoke(expressEntry) as? String
-                                val isXiaomi = provider == "Miguo" || provider == "MiMall"
-                                val isJingDong = companyCode == "JDKD"
-                                // Details of packages from Xiaomi or JingDong will be showed in built-in app
-                                if (!isXiaomi && !isJingDong) {
-                                    ExpressDetailsActivity.gotoDetailsActivity(
-                                        context,
-                                        MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
-                                        null
-                                    )
-                                    return@replaceAny null
-                                }
-                            }
-
-                            // Other details will be processed normally
-                            return@replaceAny method.invokeOriginal(*args)
-                        }
-                    }
-                }
-
+            // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2)
             // New version
             // public static String gotoExpressDetailPage(Context context, View view, ExpressEntry expressEntry, boolean z, boolean z2, Intent intent, int i2)
             findClass(PA_EXPRESS_INTENT_UTILS, PA_EXPRESS_INTENT_UTILS_OLD)
                 .hook {
                     injectMember {
+                        var isNewVersion = false
+
                         method {
                             name = "gotoExpressDetailPage"
-                            param(
-                                ContextType,
-                                ViewType,
-                                expressEntryClass,
-                                BooleanType,
-                                BooleanType,
-                                IntentType,
-                                IntType
-                            )
+                            param(ContextClass, expressEntryClass, BooleanType, BooleanType)
+                        }.remedys {
+                            method {
+                                name = "gotoExpressDetailPage"
+                                param(
+                                    ContextClass,
+                                    ViewClass,
+                                    expressEntryClass,
+                                    BooleanType,
+                                    BooleanType,
+                                    IntentClass,
+                                    IntType
+                                )
+                            }.onFind { isNewVersion = true }
                         }.ignoredError()
+
                         replaceAny {
                             val context = args().first().cast<Context>()!!
-                            val expressEntry = args(index = 2).any()!!
+                            val expressEntry = args(index = if (isNewVersion) 2 else 1).any()!!
                             val companyCode = expressEntry.javaClass.getField("companyCode")
                                 .get(expressEntry) as String
                             val companyName = expressEntry.javaClass.getField("companyName")
                                 .get(expressEntry) as String
-                            val mailNumber =
-                                expressEntry.javaClass.getField("orderNumber").get(expressEntry) as String
-                            val phoneNumber =
-                                expressEntry.javaClass.getField("phone").get(expressEntry) as? String
+                            val mailNumber = expressEntry.javaClass.getField("orderNumber")
+                                .get(expressEntry) as String
+                            val phoneNumber = expressEntry.javaClass.getField("phone")
+                                .get(expressEntry) as? String
                             // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
-                            val uris =
-                                expressEntry.javaClass.getMethod("getUris").invoke(expressEntry) as List<*>?
+                            val uris = expressEntry.javaClass.getMethod("getUris")
+                                .invoke(expressEntry) as List<*>?
                             if (!uris.isNullOrEmpty()) {
                                 // Store urls for future use such as jumping to third-party apps
                                 val uriList = arrayListOf<String>()
@@ -209,7 +154,12 @@ class HookEntry : IYukiHookXposedInit {
                                 if (!isXiaomi && !isJingDong) {
                                     ExpressDetailsActivity.gotoDetailsActivity(
                                         context,
-                                        MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
+                                        MiuiExpress(
+                                            companyCode,
+                                            companyName,
+                                            mailNumber,
+                                            phoneNumber
+                                        ),
                                         null
                                     )
                                     return@replaceAny null
@@ -261,13 +211,9 @@ class HookEntry : IYukiHookXposedInit {
                                                 )
 
                                         // Get the details
-                                        val data =
-                                            jsonParser.encodeToString(
-                                                KuaiDi100RequestParam(
-                                                    convertedCompanyCode,
-                                                    mailNumber
-                                                )
-                                            )
+                                        val data = jsonParser.encodeToString(
+                                            KuaiDi100RequestParam(convertedCompanyCode, mailNumber)
+                                        )
                                         val response = kuaiDi100.queryPackage(customer, data)
                                         // Ignore invalid result
                                         if (response.data.isNullOrEmpty()) {
@@ -277,27 +223,25 @@ class HookEntry : IYukiHookXposedInit {
                                         // Prevent detail from disappearing
                                         expressInfo.javaClass.getMethod(
                                             "setClickDisappear",
-                                            Boolean::class.javaPrimitiveType
+                                            BooleanPrimitiveType
                                         ).invoke(expressInfo, false)
                                         val originalDetails =
                                             expressInfo.javaClass.getField("details")
                                                 .get(expressInfo) as? ArrayList<Any>
-                                        val detailClass = try {
-                                            PA_EXPRESS_INFO_DETAIL.clazz
-                                        } catch (e: XposedHelpers.ClassNotFoundError) {
-                                            PA_EXPRESS_INFO_DETAIL_OLD.clazz
-                                        }
+                                        val detailClass =
+                                            if (PA_EXPRESS_INFO_DETAIL.hasClass) PA_EXPRESS_INFO_DETAIL.clazz
+                                            else PA_EXPRESS_INFO_DETAIL_OLD.clazz
                                         when {
                                             originalDetails == null -> {
                                                 // Null list, create a new instance and put the latest detail
                                                 val newDetail = detailClass.newInstance()
                                                 newDetail.javaClass.getMethod(
                                                     "setDesc",
-                                                    java.lang.String::class.java
+                                                    JavaStringClass
                                                 ).invoke(newDetail, response.data[0].context)
                                                 newDetail.javaClass.getMethod(
                                                     "setTime",
-                                                    java.lang.String::class.java
+                                                    JavaStringClass
                                                 ).invoke(newDetail, response.data[0].formattedTime)
                                                 val newDetails = ArrayList<Any>(1)
                                                 newDetails.add(newDetail)
@@ -313,11 +257,11 @@ class HookEntry : IYukiHookXposedInit {
                                                 val newDetail = detailClass.newInstance()
                                                 newDetail.javaClass.getMethod(
                                                     "setDesc",
-                                                    java.lang.String::class.java
+                                                    JavaStringClass
                                                 ).invoke(newDetail, response.data[0].context)
                                                 newDetail.javaClass.getMethod(
                                                     "setTime",
-                                                    java.lang.String::class.java
+                                                    JavaStringClass
                                                 ).invoke(newDetail, response.data[0].formattedTime)
                                                 originalDetails.add(newDetail)
                                             }
@@ -328,7 +272,7 @@ class HookEntry : IYukiHookXposedInit {
                                                         .get(expressInfo) as List<*>)[0]
                                                 originalDetail?.javaClass?.getMethod(
                                                     "setDesc",
-                                                    java.lang.String::class.java
+                                                    JavaStringClass
                                                 )?.invoke(originalDetail, response.data[0].context)
                                             }
                                         }
