@@ -93,7 +93,8 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 viewBinding.rvTimeline.doOnNextLayout {
                     val areAllItemsVisible =
                         (viewBinding.rvTimeline.layoutManager as LinearLayoutManager)
-                            .findLastCompletelyVisibleItemPosition() == (viewBinding.rvTimeline.adapter?.itemCount ?: 1) - 1
+                            .findLastCompletelyVisibleItemPosition() == (viewBinding.rvTimeline.adapter?.itemCount
+                            ?: 1) - 1
                     if (areAllItemsVisible) {
                         viewBinding.rvTimeline.overScrollMode = View.OVER_SCROLL_NEVER
                     }
@@ -215,7 +216,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 val expressDetails = getModel<ExpressDetails>()
 
                 binding.node.apply {
-                    initLine(itemViewType)
                     markerSize = attributes.markerSize
                     setMarkerColor(attributes.markerColor)
                     isMarkerInCenter = attributes.markerInCenter
@@ -226,11 +226,20 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                     linePadding = attributes.linePadding
 
                     lineWidth = attributes.lineWidth
-                    setStartLineColor(attributes.startLineColor, itemViewType)
-                    setEndLineColor(attributes.endLineColor, itemViewType)
                     lineStyle = attributes.lineStyle
                     lineStyleDashLength = attributes.lineDashWidth
                     lineStyleDashGap = attributes.lineDashGap
+
+                    val nodeType =
+                        TimelineView.getTimeLineViewType(absoluteAdapterPosition, itemCount)
+                    when (absoluteAdapterPosition) {
+                        0 -> setEndLineColor(attributes.endLineColor, nodeType)
+                        itemCount -> setStartLineColor(attributes.startLineColor, nodeType)
+                        else -> {
+                            setStartLineColor(attributes.startLineColor, nodeType)
+                            setEndLineColor(attributes.endLineColor, nodeType)
+                        }
+                    }
                 }
 
                 if (absoluteAdapterPosition == 0) {
