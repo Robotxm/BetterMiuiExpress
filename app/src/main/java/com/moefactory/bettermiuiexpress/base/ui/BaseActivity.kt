@@ -14,8 +14,6 @@ import com.moefactory.bettermiuiexpress.R
  *
  * All activities must inherit from this class.
  *
- * @author wanglinpei
- *
  * @property showActionBar Whether to show action bar
  * @property title Title for action bar
  */
