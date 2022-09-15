@@ -1,8 +1,8 @@
 package com.moefactory.bettermiuiexpress.base.app
 
 // Kuaidi100 Api
-const val secretKey = "NECqxUrS2626"
-const val customer = "157E92B1594C114CA2377A627EC0892F"
+const val secretKey = "OEdotBow1703"
+const val customer = "27C23FA22071F968EE7FEDA4D8150DAD"
 
 const val BME_MAIN_ACTIVITY_ALIAS = "com.moefactory.bettermiuiexpress.activity.MainActivityAlias"
 
