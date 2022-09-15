@@ -38,7 +38,8 @@
                 android:textAppearance="@style/MiuiStyle.ActionBar.Title.Expanded"
                 android:textColor="@color/miuiActionBarTitleColor"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="顺丰快递" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.MaterialToolbar>
 

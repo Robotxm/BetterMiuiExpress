@@ -2,6 +2,8 @@ package com.moefactory.bettermiuiexpress.activity
 
 import android.app.Activity
 import android.app.ActivityManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -104,6 +106,15 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
         setSupportActionBar(viewBinding.mtToolbar)
         viewBinding.actionBarTitle.text = miuiExpress?.companyName
+        viewBinding.actionBarTitle.setOnLongClickListener {
+            val debugMiuiExpress = miuiExpress?.copy(phoneNumber = null)
+            (getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)?.setPrimaryClip(
+                ClipData.newPlainText("BME-Debug", debugMiuiExpress.toString())
+            )
+            Toast.makeText(this, R.string.debug_info_copied, Toast.LENGTH_SHORT).show()
+
+            true
+        }
         viewBinding.up.setOnClickListener { onBackPressed() }
 
         viewBinding.tvMailNumber.text =
