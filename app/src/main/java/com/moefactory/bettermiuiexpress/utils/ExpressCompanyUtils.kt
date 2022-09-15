@@ -52,7 +52,7 @@ object ExpressCompanyUtils {
         const val JIA_YI = "jiayiwuliu"
         const val JING_DONG = "jd"
         const val KUAI_JIE = "kuaijiesudi"
-        val LONG_BANG = null // "longbangwuliu" // Incorrect
+        val LONG_BANG = "lbex"
         const val QUAN_FENG = "quanfengkuaidi"
         val RU_FENG_DA = null // "rufengda" // Incorrect
         const val SHEN_TONG = "shentong"
@@ -66,7 +66,7 @@ object ExpressCompanyUtils {
         const val YOU_ZHENG_IN = "youzhengguoji"
         const val YUAN_TONG = "yuantong"
         const val YUN_DA = "yunda"
-        const val ZHI_MA_KAI_MEN = "zhimakaimen"
+        const val ZHI_MA_KAI_MEN = "danniao" // Dan Niao
         val ZHONG_TIE = null // "zhongtiekuaiyun" // Incorrect
         const val ZHONG_TONG = "zhongtong"
     }
