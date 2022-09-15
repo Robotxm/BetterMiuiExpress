@@ -6,9 +6,11 @@ import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
 import com.moefactory.bettermiuiexpress.base.app.customer
 import com.moefactory.bettermiuiexpress.base.app.secretKey
 import com.moefactory.bettermiuiexpress.base.intercepter.KuaiDi100Interceptor
+import com.moefactory.bettermiuiexpress.model.BaseKuaiDi100Response
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
 import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -21,7 +23,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 
 object ExpressRepository {
 
-    private val jsonParser by lazy {
+    val jsonParser by lazy {
         Json {
             ignoreUnknownKeys = true
             isLenient = true
@@ -35,6 +37,7 @@ object ExpressRepository {
             .build()
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://poll.kuaidi100.com/")
@@ -44,43 +47,52 @@ object ExpressRepository {
             .build()
     }
 
-    private val kuaiDi100 by lazy {
+    private val kuaiDi100Api by lazy {
         retrofit.create(KuaiDi100Api::class.java)
     }
 
     fun queryCompany(mailNumber: String) =
         liveData {
             try {
-                val response = kuaiDi100.queryExpressCompany(secretKey, mailNumber)
-                when {
-                    // Normal
-                    response.startsWith("[") -> {
-                        val result = jsonParser.decodeFromString<List<KuaiDi100Company>>(response)
-                        emit(Result.success(result))
-                    }
-                    // Error
-                    response.startsWith("{") -> {
-                        val message =
-                            jsonParser.parseToJsonElement(response).jsonObject["message"]?.jsonPrimitive?.content
-                        throw Exception(message)
-                    }
-                    // Exception
-                    else -> throw Exception("Unexpected response: $response")
-                }
+                val result = queryCompanyActual(mailNumber)
+                emit(Result.success(result))
             } catch (e: Exception) {
                 e.printStackTrace()
                 emit(Result.failure(e))
             }
         }
 
+    suspend fun queryCompanyActual(mailNumber: String): List<KuaiDi100Company> {
+        val response = kuaiDi100Api.queryExpressCompany(secretKey, mailNumber)
+        when {
+            // Normal
+            response.startsWith("[") -> {
+                return jsonParser.decodeFromString(response)
+            }
+            // Error
+            response.startsWith("{") -> {
+                val message = jsonParser.parseToJsonElement(response)
+                    .jsonObject["message"]?.jsonPrimitive?.content
+                throw Exception(message)
+            }
+            // Exception
+            else -> throw Exception("Unexpected response: $response")
+        }
+    }
+
     fun queryExpress(companyCode: String, mailNumber: String) =
         liveData(Dispatchers.IO) {
-            val data = jsonParser.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
             try {
-                emit(Result.success(kuaiDi100.queryPackage(customer, data)))
+                val result = queryExpressActual(companyCode, mailNumber)
+                emit(Result.success(result))
             } catch (e: Exception) {
                 e.printStackTrace()
                 emit(Result.failure(e))
             }
         }
+
+    suspend fun queryExpressActual(companyCode: String, mailNumber: String): BaseKuaiDi100Response {
+        val data = jsonParser.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
+        return kuaiDi100Api.queryPackage(customer, data)
+    }
 }
