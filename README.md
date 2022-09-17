@@ -4,6 +4,8 @@ English | [中文](https://coolapk.com/apk/com.moefactory.bettermiuiexpress)
 
 BetterMiuiExpress is an Xposed module that prevents express details to be showed in third-party apps such as Taobao, CaiNiao, etc. and shows a custom activity to display the details.
 
+**No built-in token provided! Fill `secretKey` and `customer` in `BaseConst.kt` before compiling!**
+
 ## Prerequisites
 
 - MIUI based on Android 7.0 or above (Tested on Mi 11 Ultra with MIUI 12.5.11 based on Android 11).
