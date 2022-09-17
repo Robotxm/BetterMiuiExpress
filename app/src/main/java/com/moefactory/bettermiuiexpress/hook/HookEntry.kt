@@ -11,7 +11,7 @@ import com.moefactory.bettermiuiexpress.BuildConfig
 import com.moefactory.bettermiuiexpress.activity.ExpressDetailsActivity
 import com.moefactory.bettermiuiexpress.base.app.*
 import com.moefactory.bettermiuiexpress.ktx.*
-import com.moefactory.bettermiuiexpress.model.MiuiExpress
+import com.moefactory.bettermiuiexpress.model.*
 import com.moefactory.bettermiuiexpress.repository.ExpressRepository
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import kotlinx.coroutines.runBlocking
@@ -59,14 +59,11 @@ class HookEntry : IYukiHookXposedInit {
                         replaceAny {
                             val context = args().first().cast<Context>()!!
                             val expressEntry = args(index = if (isNewVersion) 2 else 1).any()!!
-                            val companyCode = expressEntry.javaClass.getField("companyCode")
-                                .get(expressEntry) as String
-                            val companyName = expressEntry.javaClass.getField("companyName")
-                                .get(expressEntry) as String
-                            val mailNumber = expressEntry.javaClass.getField("orderNumber")
-                                .get(expressEntry) as String
-                            val phoneNumber = expressEntry.javaClass.getField("phone")
-                                .get(expressEntry) as? String
+                            val expressEntryWrapper = expressEntry.toExpressEntryWrapper()
+                            val companyCode = expressEntryWrapper.companyCode
+                            val companyName = expressEntryWrapper.companyName
+                            val mailNumber = expressEntryWrapper.orderNumber
+                            val phoneNumber = expressEntryWrapper.phone
                             // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
                             val uris = expressEntry.javaClass.getMethod("getUris")
                                 .invoke(expressEntry) as List<*>?
@@ -125,22 +122,17 @@ class HookEntry : IYukiHookXposedInit {
                                 args().first().cast<java.util.List<*>>()?.let { expressInfoList ->
                                     for (expressInfo in expressInfoList) {
                                         // Skip packages from Xiaomi and JingDong
-                                        val provider =
-                                            expressInfo.javaClass.getMethod("getProvider")
-                                                .invoke(expressInfo) as? String
+                                        val expressInfoWrapper = expressInfo.toExpressInfoWrapper()
+                                        val provider = expressInfoWrapper.provider
                                         val isXiaomi = provider == "Miguo" || provider == "MiMall"
-                                        val companyCode =
-                                            expressInfo.javaClass.getField("companyCode")
-                                                .get(expressInfo) as String
+                                        val companyCode = expressInfoWrapper.companyCode
                                         val isJingDong = companyCode == "JDKD"
                                         if (isXiaomi || isJingDong) {
                                             continue
                                         }
 
                                         // Get the company code
-                                        val mailNumber =
-                                            expressInfo.javaClass.getField("orderNumber")
-                                                .get(expressInfo) as String
+                                        val mailNumber = expressInfoWrapper.orderNumber
                                         val convertedCompanyCode =
                                             ExpressCompanyUtils.convertCode(companyCode)
                                                 ?: ExpressRepository.queryCompanyActual(mailNumber)[0].companyCode
@@ -153,13 +145,8 @@ class HookEntry : IYukiHookXposedInit {
                                         }
 
                                         // Prevent detail from disappearing
-                                        expressInfo.javaClass.getMethod(
-                                            "setClickDisappear",
-                                            BooleanPrimitiveType
-                                        ).invoke(expressInfo, false)
-                                        val originalDetails =
-                                            expressInfo.javaClass.getField("details")
-                                                .get(expressInfo) as? ArrayList<Any>
+                                        expressInfoWrapper.clickDisappear = false
+                                        val originalDetails = expressInfoWrapper.details
                                         val detailClass =
                                             if (PA_EXPRESS_INFO_DETAIL.hasClass) PA_EXPRESS_INFO_DETAIL.clazz
                                             else PA_EXPRESS_INFO_DETAIL_OLD.clazz
@@ -167,45 +154,26 @@ class HookEntry : IYukiHookXposedInit {
                                             originalDetails == null -> {
                                                 // Null list, create a new instance and put the latest detail
                                                 val newDetail = detailClass.newInstance()
-                                                newDetail.javaClass.getMethod(
-                                                    "setDesc",
-                                                    JavaStringClass
-                                                ).invoke(newDetail, response.data[0].context)
-                                                newDetail.javaClass.getMethod(
-                                                    "setTime",
-                                                    JavaStringClass
-                                                ).invoke(newDetail, response.data[0].formattedTime)
+                                                val newDetailWrapper = newDetail.toExpressInfoDetailWrapper()
+                                                newDetailWrapper.desc = response.data[0].context
+                                                newDetailWrapper.time = response.data[0].formattedTime
                                                 val newDetails = ArrayList<Any>(1)
                                                 newDetails.add(newDetail)
-                                                expressInfo.javaClass
-                                                    .getMethod(
-                                                        "setDetails",
-                                                        java.util.ArrayList::class.java
-                                                    )
-                                                    .invoke(expressInfo, newDetails)
+                                                expressInfoWrapper.details = newDetails
                                             }
                                             originalDetails.isEmpty() -> {
                                                 // Empty list, put the latest detail
                                                 val newDetail = detailClass.newInstance()
-                                                newDetail.javaClass.getMethod(
-                                                    "setDesc",
-                                                    JavaStringClass
-                                                ).invoke(newDetail, response.data[0].context)
-                                                newDetail.javaClass.getMethod(
-                                                    "setTime",
-                                                    JavaStringClass
-                                                ).invoke(newDetail, response.data[0].formattedTime)
+                                                val newDetailWrapper = newDetail.toExpressInfoDetailWrapper()
+                                                newDetailWrapper.desc = response.data[0].context
+                                                newDetailWrapper.time = response.data[0].formattedTime
                                                 originalDetails.add(newDetail)
                                             }
                                             else -> {
                                                 // Normally, the original details contains one item
-                                                val originalDetail =
-                                                    (expressInfo.javaClass.getField("details")
-                                                        .get(expressInfo) as List<*>)[0]
-                                                originalDetail?.javaClass?.getMethod(
-                                                    "setDesc",
-                                                    JavaStringClass
-                                                )?.invoke(originalDetail, response.data[0].context)
+                                                expressInfoWrapper.details?.getOrNull(0)
+                                                    ?.toExpressInfoDetailWrapper()
+                                                    ?.desc = response.data[0].context
                                             }
                                         }
                                     }
