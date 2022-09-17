@@ -1,5 +1,6 @@
 package com.moefactory.bettermiuiexpress.activity
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.ClipData
@@ -27,7 +28,9 @@ import com.drake.brv.utils.models
 import com.drake.brv.utils.setup
 import com.github.vipulasri.timelineview.TimelineView
 import com.moefactory.bettermiuiexpress.R
-import com.moefactory.bettermiuiexpress.base.app.secretKey
+import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_CUSTOMER
+import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_SECRET_KEY
+import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
 import com.moefactory.bettermiuiexpress.databinding.ItemTimelineNodeBinding
@@ -41,6 +44,7 @@ import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+@SuppressLint("WorldReadableFiles")
 class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false) {
 
     companion object {
@@ -75,6 +79,12 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     private val urlCandidates by lazy { intent.getStringArrayListExtra(INTENT_URL_CANDIDATES) }
     private val viewModel by viewModels<ExpressDetailsViewModel>()
 
+    private val pref by lazy { getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE) }
+    private val secretKey: String?
+        get() = pref?.getString(PREF_KEY_SECRET_KEY, null)
+    private val customer: String?
+        get() = pref?.getString(PREF_KEY_CUSTOMER, null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -82,6 +92,11 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
         if (miuiExpress == null) {
             Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        if (secretKey == null || customer == null) {
             finish()
             return
         }
@@ -125,8 +140,9 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         viewModel.queryCompanyResult.observe(this) {
             if (it.isSuccess) {
                 viewModel.queryExpressDetails(
+                    miuiExpress!!.mailNumber,
                     it.getOrNull()!![0].companyCode,
-                    miuiExpress!!.mailNumber
+                    secretKey!!, customer!!
                 )
             } else {
                 viewBinding.tvStatus.setText(R.string.express_state_unknown)
@@ -158,11 +174,13 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         val companyCode = ExpressCompanyUtils.convertCode(miuiExpress!!.companyCode)
         if (companyCode != null) {
             viewModel.queryExpressDetails(
+                miuiExpress!!.mailNumber,
                 companyCode,
-                miuiExpress!!.mailNumber
+                secretKey!!,
+                customer!!
             )
         } else {
-            viewModel.queryCompany(secretKey, miuiExpress!!.mailNumber)
+            viewModel.queryCompany(secretKey!!, miuiExpress!!.mailNumber)
         }
     }
 

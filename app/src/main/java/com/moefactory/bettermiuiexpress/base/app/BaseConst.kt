@@ -1,8 +1,8 @@
 package com.moefactory.bettermiuiexpress.base.app
 
-// Kuaidi100 Api
-const val secretKey = ""
-const val customer = ""
+const val PREF_NAME = "better_miui_express"
+const val PREF_KEY_SECRET_KEY = "secretKey"
+const val PREF_KEY_CUSTOMER = "customer"
 
 const val BME_MAIN_ACTIVITY_ALIAS = "com.moefactory.bettermiuiexpress.activity.MainActivityAlias"
 

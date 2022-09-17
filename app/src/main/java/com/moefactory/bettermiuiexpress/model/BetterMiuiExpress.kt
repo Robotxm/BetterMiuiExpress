@@ -10,8 +10,3 @@ data class MiuiExpress(
     val mailNumber: String,
     val phoneNumber: String?
 ) : Parcelable
-
-data class Credential(
-    val customer: String,
-    val secretKey: String
-)

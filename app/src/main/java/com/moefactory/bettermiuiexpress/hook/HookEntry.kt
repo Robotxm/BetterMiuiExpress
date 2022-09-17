@@ -1,6 +1,7 @@
 package com.moefactory.bettermiuiexpress.hook
 
 import android.content.Context
+import android.widget.Toast
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.factory.configs
 import com.highcapable.yukihookapi.hook.factory.encase
@@ -14,10 +15,21 @@ import com.moefactory.bettermiuiexpress.ktx.*
 import com.moefactory.bettermiuiexpress.model.*
 import com.moefactory.bettermiuiexpress.repository.ExpressRepository
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
+import de.robv.android.xposed.XSharedPreferences
 import kotlinx.coroutines.runBlocking
 
 @InjectYukiHookWithXposed
 class HookEntry : IYukiHookXposedInit {
+
+    private val pref by lazy {
+        val p = XSharedPreferences(BuildConfig.APPLICATION_ID, PREF_NAME)
+        if (p.file.canRead()) p else null
+    }
+
+    private val secretKey: String?
+        get() = pref?.getString(PREF_KEY_SECRET_KEY, null)
+    private val customer: String?
+        get() = pref?.getString(PREF_KEY_CUSTOMER, null)
 
     override fun onInit() = configs {
         debugTag = "BetterMiuiExpress"
@@ -28,6 +40,16 @@ class HookEntry : IYukiHookXposedInit {
         loadApp(name = PA_PACKAGE_NAME) {
             val expressEntryClass = if (PA_EXPRESS_ENTRY.hasClass) PA_EXPRESS_ENTRY.clazz
             else PA_EXPRESS_ENTRY_OLD.clazz
+
+            if (secretKey == null || customer == null) {
+                try {
+                    Toast.makeText(appContext, "请先填写 key 和 customer", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) {
+
+                }
+
+                return@loadApp
+            }
 
             // Old version
             // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2)
@@ -135,10 +157,10 @@ class HookEntry : IYukiHookXposedInit {
                                         val mailNumber = expressInfoWrapper.orderNumber
                                         val convertedCompanyCode =
                                             ExpressCompanyUtils.convertCode(companyCode)
-                                                ?: ExpressRepository.queryCompanyActual(mailNumber)[0].companyCode
+                                                ?: ExpressRepository.queryCompanyActual(mailNumber, secretKey!!)[0].companyCode
 
                                         // Get the details
-                                        val response = ExpressRepository.queryExpressActual(convertedCompanyCode, mailNumber)
+                                        val response = ExpressRepository.queryExpressActual(mailNumber, convertedCompanyCode, secretKey!!, customer!!)
                                         // Ignore invalid result
                                         if (response.data.isNullOrEmpty()) {
                                             continue

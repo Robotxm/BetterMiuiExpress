@@ -3,12 +3,10 @@ package com.moefactory.bettermiuiexpress.repository
 import androidx.lifecycle.liveData
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
-import com.moefactory.bettermiuiexpress.base.app.customer
-import com.moefactory.bettermiuiexpress.base.app.secretKey
-import com.moefactory.bettermiuiexpress.base.intercepter.KuaiDi100Interceptor
 import com.moefactory.bettermiuiexpress.model.BaseKuaiDi100Response
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
+import com.moefactory.bettermiuiexpress.utils.SignUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -33,7 +31,6 @@ object ExpressRepository {
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
             .retryOnConnectionFailure(true)
-            .addInterceptor(KuaiDi100Interceptor())
             .build()
     }
 
@@ -51,10 +48,10 @@ object ExpressRepository {
         retrofit.create(KuaiDi100Api::class.java)
     }
 
-    fun queryCompany(mailNumber: String) =
+    fun queryCompany(mailNumber: String, secretKey: String) =
         liveData {
             try {
-                val result = queryCompanyActual(mailNumber)
+                val result = queryCompanyActual(mailNumber, secretKey)
                 emit(Result.success(result))
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -62,7 +59,7 @@ object ExpressRepository {
             }
         }
 
-    suspend fun queryCompanyActual(mailNumber: String): List<KuaiDi100Company> {
+    suspend fun queryCompanyActual(mailNumber: String, secretKey: String): List<KuaiDi100Company> {
         val response = kuaiDi100Api.queryExpressCompany(secretKey, mailNumber)
         when {
             // Normal
@@ -80,10 +77,15 @@ object ExpressRepository {
         }
     }
 
-    fun queryExpress(companyCode: String, mailNumber: String) =
+    fun queryExpress(
+        companyCode: String,
+        mailNumber: String,
+        secretKey: String,
+        customer: String
+    ) =
         liveData(Dispatchers.IO) {
             try {
-                val result = queryExpressActual(companyCode, mailNumber)
+                val result = queryExpressActual(companyCode, mailNumber, secretKey, customer)
                 emit(Result.success(result))
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -91,8 +93,14 @@ object ExpressRepository {
             }
         }
 
-    suspend fun queryExpressActual(companyCode: String, mailNumber: String): BaseKuaiDi100Response {
+    suspend fun queryExpressActual(
+        mailNumber: String,
+        companyCode: String,
+        secretKey: String,
+        customer: String
+    ): BaseKuaiDi100Response {
         val data = jsonParser.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
-        return kuaiDi100Api.queryPackage(customer, data)
+        val sign = SignUtils.sign(data, secretKey, customer)
+        return kuaiDi100Api.queryPackage(customer, data, sign)
     }
 }

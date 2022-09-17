@@ -12,6 +12,7 @@ interface KuaiDi100Api {
     suspend fun queryPackage(
         @Field("customer") customer: String,
         @Field("param") param: String,
+        @Field("sign") sign: String
     ): BaseKuaiDi100Response
 
     @POST("https://www.kuaidi100.com/autonumber/auto")
