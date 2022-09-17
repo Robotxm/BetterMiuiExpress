@@ -4,13 +4,13 @@ English | [中文](https://coolapk.com/apk/com.moefactory.bettermiuiexpress)
 
 BetterMiuiExpress is an Xposed module that prevents express details to be showed in third-party apps such as Taobao, CaiNiao, etc. and shows a custom activity to display the details.
 
-**No built-in token provided! Fill `secretKey` and `customer` in `BaseConst.kt` before compiling!**
+**No built-in token provided!**
 
 ## Prerequisites
 
 - MIUI based on Android 7.0 or above (Tested on Mi 11 Ultra with MIUI 12.5.11 based on Android 11).
-
 - MIUI Personal Assistant (智能助理) app installed
+- LSPosed or other Xposed-compatible framework **with XSharedPreferences support**
 
 ## Usages
 
@@ -19,6 +19,7 @@ The following instructions are based on LSPosed.
 - Make sure that your device has installer LSPosed or other Xposed-compatible frameworks
 - Download this module from CoolApk or compile by yourself
 - Enable this module and check MIUI Personal Assistant as the scope. You may unchecked the System Apps option in the menu to find it
+- **Open BetterMiuiExpress from your launcher, fill in the text inputs with your KuaiDi100 token and click Save**
 - Kill the MIUI Personal Assistant apps manually in LSPosed or Settings
 - Swipe to MIUI Personal Assistant in the launcher. Now clicking the express items will not lead to jumping to third-party apps
 - The latest express details will be showed in the app widget
