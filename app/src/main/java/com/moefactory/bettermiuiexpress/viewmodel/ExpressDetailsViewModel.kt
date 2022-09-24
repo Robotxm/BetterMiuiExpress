@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import com.moefactory.bettermiuiexpress.model.KuaiDi100CompanyQueryRequestParam
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
+import com.moefactory.bettermiuiexpress.model.MiuiExpress
 import com.moefactory.bettermiuiexpress.repository.ExpressRepository
 
 class ExpressDetailsViewModel : ViewModel() {
@@ -26,11 +27,27 @@ class ExpressDetailsViewModel : ViewModel() {
         ExpressRepository.queryCompany(it.mailNumber, it.secretKey)
     }
 
-    fun queryExpressDetails(mailNumber: String, companyCode: String, phone: String?, secretKey: String, customer: String) {
-        queryExpressRequest.value = Triple(KuaiDi100RequestParam(mailNumber, companyCode, phone), secretKey, customer)
+    private val queryExpressFromCaiNiaoRequest = MutableLiveData<MiuiExpress>()
+    val queryExpressFromCaiNiaoResult = queryExpressFromCaiNiaoRequest.switchMap {
+        ExpressRepository.queryExpressDetailsFromCaiNiao(it)
+    }
+
+    fun queryExpressDetails(
+        mailNumber: String,
+        companyCode: String,
+        phone: String?,
+        secretKey: String,
+        customer: String
+    ) {
+        queryExpressRequest.value =
+            Triple(KuaiDi100RequestParam(mailNumber, companyCode, phone), secretKey, customer)
     }
 
     fun queryCompany(mailNumber: String, secretKey: String) {
         queryCompanyRequest.value = KuaiDi100CompanyQueryRequestParam(secretKey, mailNumber)
+    }
+
+    fun queryExpressDetailsFromCaiNiao(miuiExpress: MiuiExpress) {
+        queryExpressFromCaiNiaoRequest.value = miuiExpress
     }
 }

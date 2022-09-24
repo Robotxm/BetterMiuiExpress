@@ -96,11 +96,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             return
         }
 
-        if (secretKey == null || customer == null) {
-            finish()
-            return
-        }
-
         viewBinding.stateLayout.apply {
             loadingLayout = R.layout.loading_layout
             emptyLayout = R.layout.empty_layout
@@ -137,6 +132,57 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
         initTimeline()
 
+        if (secretKey.isNullOrBlank() || customer.isNullOrBlank()) {
+            fetchFromCainiao()
+        } else {
+            fetchFromKuaiDi100()
+        }
+
+        viewBinding.stateLayout.showLoading()
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun fetchFromCainiao() {
+        viewBinding.tvSource.text = getString(R.string.data_source, "菜鸟裹裹")
+
+        viewModel.queryExpressFromCaiNiaoResult.observe(this) {
+            val response = it.getOrNull()
+            if (response == null) {
+                viewBinding.stateLayout.showEmpty()
+                return@observe
+            }
+
+            if (it.isSuccess) {
+                val (state, detailList) = response
+
+                viewBinding.tvStatus.text = state
+                viewBinding.rvTimeline.models = detailList
+                viewBinding.stateLayout.showContent()
+            } else {
+                viewBinding.tvStatus.setText(R.string.express_state_unknown)
+                viewBinding.stateLayout.showError()
+            }
+        }
+
+        viewModel.queryExpressDetailsFromCaiNiao(miuiExpress!!)
+    }
+
+    private fun fetchFromKuaiDi100() {
+        viewBinding.tvSource.text = getString(R.string.data_source, "快递 100 ")
+
+        // Try to convert CaiNiao company code to KuaiDi100 company code
+        val companyCode = ExpressCompanyUtils.convertCode(miuiExpress!!.companyCode)
+        if (companyCode != null) {
+            viewModel.queryExpressDetails(
+                miuiExpress!!.mailNumber,
+                companyCode,
+                miuiExpress!!.phoneNumber,
+                secretKey!!,
+                customer!!
+            )
+        } else {
+            viewModel.queryCompany(miuiExpress!!.mailNumber, secretKey!!)
+        }
         viewModel.queryCompanyResult.observe(this) {
             if (it.isSuccess) {
                 viewModel.queryExpressDetails(
@@ -169,21 +215,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 viewBinding.rvTimeline.models = response.data
                 viewBinding.stateLayout.showContent()
             }
-        }
-
-        viewBinding.stateLayout.showLoading()
-        // Try to convert CaiNiao company code to KuaiDi100 company code
-        val companyCode = ExpressCompanyUtils.convertCode(miuiExpress!!.companyCode)
-        if (companyCode != null) {
-            viewModel.queryExpressDetails(
-                miuiExpress!!.mailNumber,
-                companyCode,
-                miuiExpress!!.phoneNumber,
-                secretKey!!,
-                customer!!
-            )
-        } else {
-            viewModel.queryCompany(miuiExpress!!.mailNumber, secretKey!!)
         }
     }
 

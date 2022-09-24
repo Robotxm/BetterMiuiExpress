@@ -19,6 +19,9 @@ class ExpressInfoWrapper(private val expressInfoObject: Any) {
     val companyCode: String
         get() = expressInfoClass.getField("companyCode").get(expressInfoObject) as String
 
+    val companyName: String
+        get() = expressInfoClass.getField("companyName").get(expressInfoObject) as String
+
     val orderNumber: String
         get() = expressInfoClass.getField("orderNumber").get(expressInfoObject) as String
 
@@ -28,6 +31,12 @@ class ExpressInfoWrapper(private val expressInfoObject: Any) {
             expressInfoClass.getMethod("setClickDisappear", BooleanPrimitiveType)
                 .invoke(expressInfoObject, value)
         }
+
+    val phone: String
+        get() = expressInfoClass.getMethod("getPhone").invoke(expressInfoObject) as String
+
+    val secretKey: String?
+        get() = expressInfoClass.getMethod("getSecretKey").invoke(expressInfoObject) as? String
 
     var details: ArrayList<Any>?
         get() = expressInfoClass.getField("details")
@@ -51,6 +60,8 @@ class ExpressEntryWrapper(private val expressEntryObject: Any) {
         get() = expressEntryClass.getField("orderNumber").get(expressEntryObject) as String
     val phone: String?
         get() = expressEntryClass.getField("phone").get(expressEntryObject) as? String
+    val secretKey: String?
+        get() = expressEntryClass.getMethod("getSecretKey").invoke(expressEntryObject) as? String
 
     val uris: List<*>?
         get() = expressEntryClass.getMethod("getUris")

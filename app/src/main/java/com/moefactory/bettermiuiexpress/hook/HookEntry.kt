@@ -30,6 +30,8 @@ class HookEntry : IYukiHookXposedInit {
         get() = pref?.getString(PREF_KEY_SECRET_KEY, null)
     private val customer: String?
         get() = pref?.getString(PREF_KEY_CUSTOMER, null)
+    private val shouldFetchFromCaiNiao: Boolean
+        get() = secretKey.isNullOrBlank() || customer.isNullOrBlank()
 
     override fun onInit() = configs {
         debugTag = "BetterMiuiExpress"
@@ -40,16 +42,6 @@ class HookEntry : IYukiHookXposedInit {
         loadApp(name = PA_PACKAGE_NAME) {
             val expressEntryClass = if (PA_EXPRESS_ENTRY.hasClass) PA_EXPRESS_ENTRY.clazz
             else PA_EXPRESS_ENTRY_OLD.clazz
-
-            if (secretKey == null || customer == null) {
-                try {
-                    Toast.makeText(appContext, "请先填写 key 和 customer", Toast.LENGTH_SHORT).show()
-                } catch (_: Exception) {
-
-                }
-
-                return@loadApp
-            }
 
             // Old version
             // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2)
@@ -88,6 +80,7 @@ class HookEntry : IYukiHookXposedInit {
                             val phoneNumber = expressEntryWrapper.phone
                             // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
                             val uris = expressEntryWrapper.uris
+                            val caiNiaoSecretKey = expressEntryWrapper.secretKey
                             if (!uris.isNullOrEmpty()) {
                                 // Store urls for future use such as jumping to third-party apps
                                 val uriList = arrayListOf<String>()
@@ -98,7 +91,7 @@ class HookEntry : IYukiHookXposedInit {
                                 }
                                 ExpressDetailsActivity.gotoDetailsActivity(
                                     context,
-                                    MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
+                                    MiuiExpress(companyCode, companyName, mailNumber, phoneNumber, caiNiaoSecretKey),
                                     uriList
                                 )
                                 return@replaceAny null
@@ -115,7 +108,8 @@ class HookEntry : IYukiHookXposedInit {
                                             companyCode,
                                             companyName,
                                             mailNumber,
-                                            phoneNumber
+                                            phoneNumber,
+                                            caiNiaoSecretKey
                                         ),
                                         null
                                     )
@@ -147,28 +141,46 @@ class HookEntry : IYukiHookXposedInit {
                                         val provider = expressInfoWrapper.provider
                                         val isXiaomi = provider == "Miguo" || provider == "MiMall"
                                         val companyCode = expressInfoWrapper.companyCode
+                                        val companyName = expressInfoWrapper.companyName
                                         val isJingDong = companyCode == "JDKD"
                                         if (isXiaomi || isJingDong) {
                                             continue
                                         }
 
-                                        // Get the company code
                                         val mailNumber = expressInfoWrapper.orderNumber
-                                        val convertedCompanyCode =
-                                            ExpressCompanyUtils.convertCode(companyCode)
-                                                ?: ExpressRepository.queryCompanyActual(mailNumber, secretKey!!)[0].companyCode
+                                        val caiNiaoSecretKey = expressInfoWrapper.secretKey
 
-                                        // Get the details
-                                        val phoneNumber = expressInfoWrapper.phone
-                                        val response = ExpressRepository.queryExpressActual(
-                                            mailNumber,
-                                            convertedCompanyCode,
-                                            phoneNumber,
-                                            secretKey!!,
-                                            customer!!
-                                        )
+                                        val detailList = if (shouldFetchFromCaiNiao) {
+                                            ExpressRepository.queryExpressDetailsFromCaiNiaoActual(
+                                                MiuiExpress(
+                                                    companyCode,
+                                                    companyName,
+                                                    mailNumber,
+                                                    null,
+                                                    caiNiaoSecretKey
+                                                )
+                                            ).second
+                                        } else {
+                                            // Get the company code
+                                            val convertedCompanyCode =
+                                                ExpressCompanyUtils.convertCode(companyCode)
+                                                    ?: ExpressRepository.queryCompanyActual(mailNumber, secretKey!!)[0].companyCode
+
+                                            // Get the details
+                                            val phoneNumber = expressInfoWrapper.phone
+                                            val response = ExpressRepository.queryExpressActual(
+                                                mailNumber,
+                                                convertedCompanyCode,
+                                                phoneNumber,
+                                                secretKey!!,
+                                                customer!!
+                                            )
+
+                                            response.data
+                                        }
+
                                         // Ignore invalid result
-                                        if (response.data.isNullOrEmpty()) {
+                                        if (detailList.isNullOrEmpty()) {
                                             continue
                                         }
 
@@ -183,8 +195,8 @@ class HookEntry : IYukiHookXposedInit {
                                                 // Null list, create a new instance and put the latest detail
                                                 val newDetail = detailClass.newInstance()
                                                 val newDetailWrapper = newDetail.toExpressInfoDetailWrapper()
-                                                newDetailWrapper.desc = response.data[0].context
-                                                newDetailWrapper.time = response.data[0].formattedTime
+                                                newDetailWrapper.desc = detailList[0].context
+                                                newDetailWrapper.time = detailList[0].formattedTime
                                                 val newDetails = ArrayList<Any>(1)
                                                 newDetails.add(newDetail)
                                                 expressInfoWrapper.details = newDetails
@@ -193,15 +205,15 @@ class HookEntry : IYukiHookXposedInit {
                                                 // Empty list, put the latest detail
                                                 val newDetail = detailClass.newInstance()
                                                 val newDetailWrapper = newDetail.toExpressInfoDetailWrapper()
-                                                newDetailWrapper.desc = response.data[0].context
-                                                newDetailWrapper.time = response.data[0].formattedTime
+                                                newDetailWrapper.desc = detailList[0].context
+                                                newDetailWrapper.time = detailList[0].formattedTime
                                                 originalDetails.add(newDetail)
                                             }
                                             else -> {
                                                 // Normally, the original details contains one item
                                                 expressInfoWrapper.details?.getOrNull(0)
                                                     ?.toExpressInfoDetailWrapper()
-                                                    ?.desc = response.data[0].context
+                                                    ?.desc = detailList[0].context
                                             }
                                         }
                                     }

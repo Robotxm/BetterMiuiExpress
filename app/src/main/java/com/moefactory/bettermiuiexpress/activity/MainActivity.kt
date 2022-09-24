@@ -28,15 +28,19 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
         setSupportActionBar(viewBinding.mtToolbar)
 
         viewBinding.btnSave.setOnClickListener {
+            pref.edit {
+                putString(PREF_KEY_SECRET_KEY, viewBinding.tietKey.text?.toString() ?: "")
+                putString(PREF_KEY_CUSTOMER, viewBinding.tietCustomer.text?.toString() ?: "")
+            }
             if (viewBinding.tietCustomer.text.isNullOrEmpty() || viewBinding.tietKey.text.isNullOrEmpty()) {
-                Toast.makeText(this, R.string.empty_tips, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.save_successfully_cainiao, Toast.LENGTH_SHORT).show()
             } else {
                 pref.edit {
                     putString(PREF_KEY_SECRET_KEY, viewBinding.tietKey.text.toString())
                     putString(PREF_KEY_CUSTOMER, viewBinding.tietCustomer.text.toString())
                 }
 
-                Toast.makeText(this, R.string.save_successfully, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.save_successfully_kuaidi_100, Toast.LENGTH_SHORT).show()
             }
         }
         viewBinding.btnGithub.setOnClickListener {

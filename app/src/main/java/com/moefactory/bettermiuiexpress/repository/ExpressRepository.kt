@@ -6,7 +6,13 @@ import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
 import com.moefactory.bettermiuiexpress.model.BaseKuaiDi100Response
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
+import com.moefactory.bettermiuiexpress.model.MiuiExpress
+import com.moefactory.bettermiuiexpress.model.ExpressDetails
 import com.moefactory.bettermiuiexpress.utils.SignUtils
+import it.skrape.fetcher.BrowserFetcher
+import it.skrape.fetcher.request.UrlBuilder
+import it.skrape.fetcher.response
+import it.skrape.fetcher.skrape
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -16,6 +22,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import org.jsoup.Jsoup
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
@@ -110,5 +117,70 @@ object ExpressRepository {
 
         val sign = SignUtils.sign(data, secretKey, customer)
         return kuaiDi100Api.queryPackage(customer, data, sign)
+    }
+
+    fun queryExpressDetailsFromCaiNiao(miuiExpress: MiuiExpress) = liveData(Dispatchers.IO) {
+        try {
+            emit(Result.success(queryExpressDetailsFromCaiNiaoActual(miuiExpress)))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(Result.failure(e))
+        }
+    }
+
+    suspend fun queryExpressDetailsFromCaiNiaoActual(miuiExpress: MiuiExpress): Pair<String?, List<ExpressDetails>> {
+        return skrape(BrowserFetcher) {
+            request {
+                url {
+                    protocol = UrlBuilder.Protocol.HTTPS
+                    host = "page.cainiao.com"
+                    port = -1
+                    path = "/guoguo/app-myexpress-taobao/ld.html"
+                    queryParam {
+                        "mailNo" to miuiExpress.mailNumber
+                        "cpCode" to miuiExpress.companyCode
+                        "secretKey" to miuiExpress.secretKey
+                        "from" to "XIAOMI"
+                    }
+                }
+                userAgent = "Mozilla/5.0 (Linux; Android 12; M2102K1C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36 EdgA/105.0.1343.48"
+                sslRelaxed = true
+            }
+
+            response {
+                val jDoc = Jsoup.parse(responseBody)
+
+                // Find express status
+                val expressStatus = jDoc.selectFirst("body > div > div.cp-info.physical-border > div.cp-info_detail > div.package-status")
+                    ?.text()
+
+                val expressDetailsList = mutableListOf<ExpressDetails>()
+
+                // Find express details
+                jDoc.select("body > div > div.feed-container > ul > li")
+                    .forEach { element ->
+                        val detailContent = element.selectFirst("div.feed-item_content")
+                            ?.text()
+                        val detailDate =
+                            element.selectFirst("div.feed-item_datetime > div.feed-item_date")
+                                ?.text()
+                        val detailTime =
+                            element.selectFirst("div.feed-item_datetime > div.feed-item_time")
+                                ?.text()
+
+                        if (detailContent != null && detailDate != null && detailTime != null) {
+                            expressDetailsList.add(
+                                ExpressDetails(
+                                    context = detailContent,
+                                    formattedTime = "$detailDate $detailTime:00",
+                                    time = "$detailDate $detailTime"
+                                )
+                            )
+                        }
+                    }
+
+                Pair(expressStatus, expressDetailsList)
+            }
+        }
     }
 }
