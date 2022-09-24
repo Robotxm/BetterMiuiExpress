@@ -87,8 +87,7 @@ class HookEntry : IYukiHookXposedInit {
                             val mailNumber = expressEntryWrapper.orderNumber
                             val phoneNumber = expressEntryWrapper.phone
                             // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
-                            val uris = expressEntry.javaClass.getMethod("getUris")
-                                .invoke(expressEntry) as List<*>?
+                            val uris = expressEntryWrapper.uris
                             if (!uris.isNullOrEmpty()) {
                                 // Store urls for future use such as jumping to third-party apps
                                 val uriList = arrayListOf<String>()
@@ -160,7 +159,14 @@ class HookEntry : IYukiHookXposedInit {
                                                 ?: ExpressRepository.queryCompanyActual(mailNumber, secretKey!!)[0].companyCode
 
                                         // Get the details
-                                        val response = ExpressRepository.queryExpressActual(mailNumber, convertedCompanyCode, secretKey!!, customer!!)
+                                        val phoneNumber = expressInfoWrapper.phone
+                                        val response = ExpressRepository.queryExpressActual(
+                                            mailNumber,
+                                            convertedCompanyCode,
+                                            phoneNumber,
+                                            secretKey!!,
+                                            customer!!
+                                        )
                                         // Ignore invalid result
                                         if (response.data.isNullOrEmpty()) {
                                             continue

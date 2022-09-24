@@ -80,12 +80,13 @@ object ExpressRepository {
     fun queryExpress(
         companyCode: String,
         mailNumber: String,
+        phoneNumber: String?,
         secretKey: String,
         customer: String
     ) =
         liveData(Dispatchers.IO) {
             try {
-                val result = queryExpressActual(companyCode, mailNumber, secretKey, customer)
+                val result = queryExpressActual(companyCode, mailNumber, phoneNumber, secretKey, customer)
                 emit(Result.success(result))
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -96,10 +97,17 @@ object ExpressRepository {
     suspend fun queryExpressActual(
         mailNumber: String,
         companyCode: String,
+        phoneNumber: String?,
         secretKey: String,
         customer: String
     ): BaseKuaiDi100Response {
-        val data = jsonParser.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
+        // Shunfeng and Fengwang need phone number
+        val data = if (companyCode == "shunfeng" || companyCode == "fengwang") {
+            jsonParser.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber, phoneNumber))
+        } else {
+            jsonParser.encodeToString(KuaiDi100RequestParam(companyCode, mailNumber))
+        }
+
         val sign = SignUtils.sign(data, secretKey, customer)
         return kuaiDi100Api.queryPackage(customer, data, sign)
     }

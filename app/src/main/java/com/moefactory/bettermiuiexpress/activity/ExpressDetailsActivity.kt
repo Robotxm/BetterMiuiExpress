@@ -142,7 +142,9 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 viewModel.queryExpressDetails(
                     miuiExpress!!.mailNumber,
                     it.getOrNull()!![0].companyCode,
-                    secretKey!!, customer!!
+                    miuiExpress!!.phoneNumber,
+                    secretKey!!,
+                    customer!!
                 )
             } else {
                 viewBinding.tvStatus.setText(R.string.express_state_unknown)
@@ -176,11 +178,12 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             viewModel.queryExpressDetails(
                 miuiExpress!!.mailNumber,
                 companyCode,
+                miuiExpress!!.phoneNumber,
                 secretKey!!,
                 customer!!
             )
         } else {
-            viewModel.queryCompany(secretKey!!, miuiExpress!!.mailNumber)
+            viewModel.queryCompany(miuiExpress!!.mailNumber, secretKey!!)
         }
     }
 

@@ -45,7 +45,8 @@ data class KuaiDi100RequestParam(
     @SerialName("com")
     val companyCode: String,
     @SerialName("num")
-    val mailNumber: String
+    val mailNumber: String,
+    val phone: String? = null
 )
 
 @Serializable

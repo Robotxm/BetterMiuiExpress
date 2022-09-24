@@ -15,6 +15,7 @@ class ExpressDetailsViewModel : ViewModel() {
         ExpressRepository.queryExpress(
             it.first.companyCode,
             it.first.mailNumber,
+            it.first.phone,
             it.second,
             it.third
         )
@@ -25,8 +26,8 @@ class ExpressDetailsViewModel : ViewModel() {
         ExpressRepository.queryCompany(it.mailNumber, it.secretKey)
     }
 
-    fun queryExpressDetails(mailNumber: String, companyCode: String, secretKey: String, customer: String) {
-        queryExpressRequest.value = Triple(KuaiDi100RequestParam(mailNumber, companyCode), secretKey, customer)
+    fun queryExpressDetails(mailNumber: String, companyCode: String, phone: String?, secretKey: String, customer: String) {
+        queryExpressRequest.value = Triple(KuaiDi100RequestParam(mailNumber, companyCode, phone), secretKey, customer)
     }
 
     fun queryCompany(mailNumber: String, secretKey: String) {
