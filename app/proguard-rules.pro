@@ -42,3 +42,12 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+-keep class com.gargoylesoftware.** { *; }
+-keep class javax.xml.** { *; }
+-keep class net.sourceforge.htmlunit.** { *; }
+-keep class netscape.** { *; }
+-keep class org.apache.** { *; }
+-keep class org.htmlunit.org.apache.** { *; }
+-keep class org.w3c.dom.** { *; }
+-keep class org.xml.sax.** { *; }
