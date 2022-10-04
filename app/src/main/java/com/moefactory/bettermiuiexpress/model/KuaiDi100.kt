@@ -48,31 +48,17 @@ data class KuaiDi100Company(
     @SerialName("name") val companyName: String
 )
 
-object KuaiDi100ExpressState {
-    data class ExpressState(
-        val categoryCode: Int,
-        val categoryName: String
-    )
-
-    const val Transporting = 0
-    const val Accepted = 1
-    const val Trouble = 2
-    const val Received = 3
-    const val Rejected = 4
-    const val Delivering = 5
-    const val Withdrawal = 6
-    const val Transferred = 7
-    const val InCustoms = 8
-
-    val statesMap = listOf(
-        ExpressState(Transporting, "运输中"),
-        ExpressState(Accepted, "已揽件"),
-        ExpressState(Trouble, "疑难件"),
-        ExpressState(Received, "已签收"),
-        ExpressState(Rejected, "已拒签"),
-        ExpressState(Delivering, "派送中"),
-        ExpressState(Withdrawal, "运输中"),
-        ExpressState(Transferred, "已转寄"),
-        ExpressState(InCustoms, "清关中"),
-    )
+enum class KuaiDi100ExpressState(
+    val stateCode: Int,
+    val stateName: String
+) {
+    TRANSPORTING(0, "运输中"),
+    ACCEPTED(1, "已揽件"),
+    TROUBLE(2, "疑难件"),
+    RECEIVED(3, "已签收"),
+    REJECTED(4, "已拒签"),
+    DELIVERING(5, "派送中"),
+    WITHDRAWAL(6, "运输中"),
+    TRANSFERRED(7, "已转寄"),
+    EXPRESS_STATE(8, "清关中")
 }

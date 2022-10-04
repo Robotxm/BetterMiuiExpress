@@ -252,13 +252,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 }
 
                 if (absoluteAdapterPosition == 0) {
-                    //if (expressTrace.status == KuaiDi100ExpressState.Trouble.toString()) {
-                    //    binding.node.marker =
-                    //        AppCompatResources.getDrawable(context, R.drawable.dot_trouble)
-                    //} else {
-                        binding.node.marker =
-                            AppCompatResources.getDrawable(context, R.drawable.dot_current)
-                    //}
+                    binding.node.marker = AppCompatResources.getDrawable(context, R.drawable.dot_current)
                     binding.tvDatetime.setTextColor(context.getColor(R.color.pa_express_progress_item_first_text))
                     binding.tvCurrentStatus.setTextColor(context.getColor(R.color.pa_express_progress_item_first_text))
                 } else {

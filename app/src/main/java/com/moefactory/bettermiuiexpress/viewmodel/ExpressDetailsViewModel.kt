@@ -109,9 +109,8 @@ class ExpressDetailsViewModel : ViewModel() {
             Result.success(
                 ExpressDetails(
                     dataSource = "快递 100 ",
-                    status = KuaiDi100ExpressState.statesMap.find { state ->
-                        state.categoryCode == result.state
-                    }!!.categoryName,
+                    status = KuaiDi100ExpressState.values()
+                        .first { s -> s.stateCode == result.state }.stateName,
                     traces = result.data?.map { d -> d.toExpressTrace() }
                         ?.sortedDescending() ?: listOf()
                 )
