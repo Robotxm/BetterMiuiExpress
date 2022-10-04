@@ -61,7 +61,7 @@
                 android:layout_marginStart="28dp"
                 android:layout_marginTop="8dp"
                 android:textColor="@color/receivedTextColor"
-                android:textSize="18sp"
+                android:textSize="@dimen/pa_sp_16"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -73,6 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="28dp"
                 android:textColor="@color/pa_express_detail_express_number_color"
+                android:textSize="@dimen/pa_sp_13"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_status"
                 tools:text="快递单号: 1234567890" />
@@ -94,6 +95,7 @@
                 android:layout_marginTop="32dp"
                 android:text="@string/data_source"
                 android:textColor="@color/pa_express_detail_provider_color"
+                android:textSize="@dimen/pa_sp_13"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/v_placeholder" />
 

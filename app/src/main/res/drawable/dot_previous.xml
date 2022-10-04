@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <size
-        android:width="32dp"
-        android:height="32dp" />
-    <corners android:radius="32dp" />
-    <solid android:color="@color/miuiDotPreviousCenterColor" />
-    <stroke
-        android:width="2dp"
-        android:color="@color/miuiDotPreviousStrokeColor" />
-</shape>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="9dp"
+    android:height="9dp"
+    android:viewportWidth="26"
+    android:viewportHeight="26">
+    <path
+        android:fillColor="#ffffff"
+        android:pathData="M13,13m-10.5,0a10.5,10.5 0,1 1,21 0a10.5,10.5 0,1 1,-21 0"
+        android:strokeWidth="5"
+        android:strokeColor="#cbcbcb" />
+</vector>

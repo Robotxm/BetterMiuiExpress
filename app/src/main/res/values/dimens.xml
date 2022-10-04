@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="pa_express_progress_item_text">13dp</dimen>
+    <dimen name="pa_express_detail_list_item_datetime_width">38dp</dimen>
+    <dimen name="pa_sp_13">13sp</dimen>
+    <dimen name="pa_sp_16">16sp</dimen>
+</resources>
