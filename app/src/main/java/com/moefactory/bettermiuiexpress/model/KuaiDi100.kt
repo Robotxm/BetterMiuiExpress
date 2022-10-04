@@ -1,7 +1,5 @@
 package com.moefactory.bettermiuiexpress.model
 
-import androidx.annotation.StringRes
-import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.serializer.IntAsBooleanSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,13 +14,10 @@ data class BaseKuaiDi100Response(
     val status: Int? = null,
     val condition: String? = null,
     @SerialName("ischeck")
-    @Serializable(with = IntAsBooleanSerializer::class)
-    val isReceived: Boolean? = null,
-    @SerialName("com")
-    val companyCode: String? = null,
-    @SerialName("nu")
-    val mailNumber: String? = null,
-    val data: List<ExpressDetails>? = null,
+    @Serializable(with = IntAsBooleanSerializer::class) val isReceived: Boolean? = null,
+    @SerialName("com") val companyCode: String? = null,
+    @SerialName("nu") val mailNumber: String? = null,
+    val data: List<KuaiDi100ExpressDetails>? = null,
 
     /* Unexpected response fields */
     val result: Boolean? = null,
@@ -30,11 +25,10 @@ data class BaseKuaiDi100Response(
 )
 
 @Serializable
-data class ExpressDetails(
+data class KuaiDi100ExpressDetails(
     val context: String,
     val time: String,
-    @SerialName("ftime")
-    val formattedTime: String,
+    @SerialName("ftime") val formattedTime: String,
     val status: String? = null,
     val areaCode: String? = null,
     val areaName: String? = null
@@ -42,34 +36,22 @@ data class ExpressDetails(
 
 @Serializable
 data class KuaiDi100RequestParam(
-    @SerialName("com")
-    val companyCode: String,
-    @SerialName("num")
-    val mailNumber: String,
+    @SerialName("com") val companyCode: String,
+    @SerialName("num") val mailNumber: String,
     val phone: String? = null
-)
-
-@Serializable
-data class KuaiDi100CompanyQueryRequestParam(
-    @SerialName("key")
-    val secretKey: String,
-    @SerialName("num")
-    val mailNumber: String,
 )
 
 @Serializable
 data class KuaiDi100Company(
     val lengthPre: Int,
-    @SerialName("comCode")
-    val companyCode: String,
-    @SerialName("name")
-    val companyName: String
+    @SerialName("comCode") val companyCode: String,
+    @SerialName("name") val companyName: String
 )
 
 object KuaiDi100ExpressState {
     data class ExpressState(
         val categoryCode: Int,
-        @StringRes val categoryNameId: Int
+        val categoryName: String
     )
 
     const val Transporting = 0
@@ -83,14 +65,14 @@ object KuaiDi100ExpressState {
     const val InCustoms = 8
 
     val statesMap = listOf(
-        ExpressState(Transporting, R.string.express_state_transport),
-        ExpressState(Accepted, R.string.express_state_accept),
-        ExpressState(Trouble, R.string.express_state_failed),
-        ExpressState(Received, R.string.express_state_sign),
-        ExpressState(Rejected, R.string.express_state_reject),
-        ExpressState(Delivering, R.string.express_state_delivering),
-        ExpressState(Withdrawal, R.string.express_state_transport),
-        ExpressState(Transferred, R.string.express_state_transferred),
-        ExpressState(InCustoms, R.string.express_state_in_customs),
+        ExpressState(Transporting, "运输中"),
+        ExpressState(Accepted, "已揽件"),
+        ExpressState(Trouble, "疑难件"),
+        ExpressState(Received, "已签收"),
+        ExpressState(Rejected, "已拒签"),
+        ExpressState(Delivering, "派送中"),
+        ExpressState(Withdrawal, "运输中"),
+        ExpressState(Transferred, "已转寄"),
+        ExpressState(InCustoms, "清关中"),
     )
 }

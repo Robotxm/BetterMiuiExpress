@@ -35,14 +35,10 @@ import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
 import com.moefactory.bettermiuiexpress.databinding.ItemTimelineNodeBinding
 import com.moefactory.bettermiuiexpress.ktx.dp
-import com.moefactory.bettermiuiexpress.model.ExpressDetails
-import com.moefactory.bettermiuiexpress.model.KuaiDi100ExpressState
+import com.moefactory.bettermiuiexpress.model.ExpressTrace
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
 import com.moefactory.bettermiuiexpress.model.TimelineAttributes
-import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 @SuppressLint("WorldReadableFiles")
 class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false) {
@@ -130,92 +126,42 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         viewBinding.tvMailNumber.text =
             getString(R.string.express_details_mail_number, miuiExpress!!.mailNumber)
 
-        initTimeline()
-
-        if (secretKey.isNullOrBlank() || customer.isNullOrBlank()) {
-            fetchFromCainiao()
-        } else {
-            fetchFromKuaiDi100()
-        }
-
-        viewBinding.stateLayout.showLoading()
-    }
-
-    @SuppressLint("SetJavaScriptEnabled")
-    private fun fetchFromCainiao() {
-        viewBinding.tvSource.text = getString(R.string.data_source, "菜鸟裹裹")
-
-        viewModel.queryExpressFromCaiNiaoResult.observe(this) {
-            val response = it.getOrNull()
-            if (response == null) {
-                viewBinding.stateLayout.showEmpty()
-                return@observe
-            }
-
-            if (it.isSuccess) {
-                val (state, detailList) = response
-
-                viewBinding.tvStatus.text = state
-                viewBinding.rvTimeline.models = detailList
-                viewBinding.stateLayout.showContent()
-            } else {
-                viewBinding.tvStatus.setText(R.string.express_state_unknown)
-                viewBinding.stateLayout.showError()
-            }
-        }
-
-        viewModel.queryExpressDetailsFromCaiNiao(miuiExpress!!)
-    }
-
-    private fun fetchFromKuaiDi100() {
-        viewBinding.tvSource.text = getString(R.string.data_source, "快递 100 ")
-
-        // Try to convert CaiNiao company code to KuaiDi100 company code
-        val companyCode = ExpressCompanyUtils.convertCode(miuiExpress!!.companyCode)
-        if (companyCode != null) {
+        viewModel.kuaiDi100CompanyInfo.observe(this) {
             viewModel.queryExpressDetails(
                 miuiExpress!!.mailNumber,
-                companyCode,
+                it.companyCode,
                 miuiExpress!!.phoneNumber,
                 secretKey!!,
                 customer!!
             )
-        } else {
-            viewModel.queryCompany(miuiExpress!!.mailNumber, secretKey!!)
         }
-        viewModel.queryCompanyResult.observe(this) {
+        viewModel.expressDetails.observe(this) {
             if (it.isSuccess) {
-                viewModel.queryExpressDetails(
-                    miuiExpress!!.mailNumber,
-                    it.getOrNull()!![0].companyCode,
-                    miuiExpress!!.phoneNumber,
-                    secretKey!!,
-                    customer!!
-                )
+                val response = it.getOrNull()
+                if (response == null || response.traces.isEmpty()) {
+                    viewBinding.stateLayout.showEmpty()
+                    return@observe
+                }
+                viewBinding.tvSource.text = getString(R.string.data_source, response.dataSource)
+                viewBinding.tvStatus.text = response.status
+                viewBinding.rvTimeline.models = response.traces
+                viewBinding.stateLayout.showContent()
             } else {
                 viewBinding.tvStatus.setText(R.string.express_state_unknown)
                 viewBinding.stateLayout.showError()
+                it.exceptionOrNull()?.printStackTrace()
             }
         }
-        viewModel.queryExpressResult.observe(this) {
-            if (it.isSuccess) {
-                val response = it.getOrNull()
-                if (response == null) {
-                    viewBinding.stateLayout.showEmpty()
-                    return@observe
-                }
-                if (response.result != null) {
-                    viewBinding.stateLayout.showEmpty()
-                    return@observe
-                }
-                val state = KuaiDi100ExpressState.statesMap.find { state ->
-                    state.categoryCode == response.state
-                }!!
-                viewBinding.tvStatus.setText(state.categoryNameId)
-                viewBinding.rvTimeline.models = response.data
-                viewBinding.stateLayout.showContent()
-            }
-        }
+
+        initTimeline()
+
+        viewBinding.stateLayout.showLoading()
+        viewModel.queryExpressDetails(
+            miuiExpress!!.mailNumber,
+            miuiExpress!!.companyCode,
+            miuiExpress!!.phoneNumber,
+            secretKey, customer
+        )
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -272,11 +218,11 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         )
 
         viewBinding.rvTimeline.linear().setup {
-            addType<ExpressDetails>(R.layout.item_timeline_node)
+            addType<ExpressTrace>(R.layout.item_timeline_node)
 
             onBind {
                 val binding = ItemTimelineNodeBinding.bind(itemView)
-                val expressDetails = getModel<ExpressDetails>()
+                val expressTrace = getModel<ExpressTrace>()
 
                 binding.node.apply {
                     markerSize = attributes.markerSize
@@ -306,13 +252,13 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 }
 
                 if (absoluteAdapterPosition == 0) {
-                    if (expressDetails.status == KuaiDi100ExpressState.Trouble.toString()) {
-                        binding.node.marker =
-                            AppCompatResources.getDrawable(context, R.drawable.dot_trouble)
-                    } else {
+                    //if (expressTrace.status == KuaiDi100ExpressState.Trouble.toString()) {
+                    //    binding.node.marker =
+                    //        AppCompatResources.getDrawable(context, R.drawable.dot_trouble)
+                    //} else {
                         binding.node.marker =
                             AppCompatResources.getDrawable(context, R.drawable.dot_current)
-                    }
+                    //}
                     binding.tvDatetime.setTextColor(context.getColor(R.color.pa_express_progress_item_first_text))
                     binding.tvCurrentStatus.setTextColor(context.getColor(R.color.pa_express_progress_item_first_text))
                 } else {
@@ -322,13 +268,12 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                     binding.tvCurrentStatus.setTextColor(context.getColor(R.color.pa_express_progress_item_text))
                 }
 
-                val originalSdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
-                val newSdf = SimpleDateFormat("MM-dd\nHH:mm", Locale.CHINA)
-                val datetime = originalSdf.parse(expressDetails.formattedTime)
-                val newDatetime = newSdf.format(datetime!!)
-                binding.tvDatetime.text = newDatetime
+                binding.tvDatetime.text = getString(
+                    R.string.express_trace_date_time,
+                    expressTrace.date, expressTrace.time
+                )
 
-                val currentStatus = expressDetails.context
+                val currentStatus = expressTrace.description
                 val spannableStringBuilder = SpannableStringBuilder(currentStatus)
                 val regex = "1[3|4|5|7|8][0-9]\\d{8}".toRegex()
                 val matches = regex.findAll(currentStatus)

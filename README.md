@@ -2,9 +2,9 @@
 
 English | [中文](https://coolapk.com/apk/com.moefactory.bettermiuiexpress)
 
-BetterMiuiExpress is an Xposed module that prevents express details to be showed in third-party apps such as Taobao, CaiNiao, etc. and shows a custom activity to display the details.
+BetterMiuiExpress is an Xposed module that prevents express details to be displayed in third-party apps such as Taobao, CaiNiao, etc. and shows a custom activity to display the details.
 
-**No built-in token provided!**
+**No built-in KuaiDi100 customer and secret key fields provided!**
 
 ## Prerequisites
 
@@ -19,10 +19,9 @@ The following instructions are based on LSPosed.
 - Make sure that your device has installer LSPosed or other Xposed-compatible frameworks
 - Download this module from CoolApk or compile by yourself
 - Enable this module and check MIUI Personal Assistant as the scope. You may unchecked the System Apps option in the menu to find it
-- **Open BetterMiuiExpress from your launcher, fill in the text inputs with your KuaiDi100 token and click Save**
+- If you want to retrieve express details from KuaiDi100, open BetterMiuiExpress from your Xposed framework manager and fill in the text inputs with your KuaiDi100 customer and secret key and click 'Save'. If you want to retrieve express details from CaiNiao, leave the fields mentioned above blank and click 'Save'
 - Kill the MIUI Personal Assistant apps manually in LSPosed or Settings
-- Swipe to MIUI Personal Assistant in the launcher. Now clicking the express items will not lead to jumping to third-party apps
-- The latest express details will be showed in the app widget
+- Swipe to MIUI Personal Assistant in the launcher. Now clicking the express items will not lead to jumping to third-party apps, and the latest express details will be displayed in the app widget
 
 ## For express delivered to CaiNiao Post House
 
@@ -38,4 +37,5 @@ BetterMiuiExpress is licensed under the GPLv3. For details, check the license in
 
 ## Acknowledgement
 
-BetterMiuiExpress is now based on [YukiHookAPI](https://github.com/fankes/YukiHookAPI).
+- BetterMiuiExpress is now based on [YukiHookAPI](https://github.com/fankes/YukiHookAPI).
+- @YifePlayte for CaiNiao API usages

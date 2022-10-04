@@ -1,7 +1,6 @@
 package com.moefactory.bettermiuiexpress.hook
 
 import android.content.Context
-import android.widget.Toast
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.factory.configs
 import com.highcapable.yukihookapi.hook.factory.encase
@@ -13,7 +12,7 @@ import com.moefactory.bettermiuiexpress.activity.ExpressDetailsActivity
 import com.moefactory.bettermiuiexpress.base.app.*
 import com.moefactory.bettermiuiexpress.ktx.*
 import com.moefactory.bettermiuiexpress.model.*
-import com.moefactory.bettermiuiexpress.repository.ExpressRepository
+import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import de.robv.android.xposed.XSharedPreferences
 import kotlinx.coroutines.runBlocking
@@ -151,33 +150,27 @@ class HookEntry : IYukiHookXposedInit {
                                         val caiNiaoSecretKey = expressInfoWrapper.secretKey
 
                                         val detailList = if (shouldFetchFromCaiNiao) {
-                                            ExpressRepository.queryExpressDetailsFromCaiNiaoActual(
-                                                MiuiExpress(
-                                                    companyCode,
-                                                    companyName,
-                                                    mailNumber,
-                                                    null,
-                                                    caiNiaoSecretKey
-                                                )
-                                            ).second
+                                            ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(
+                                                mailNumber
+                                            )?.fullTraceDetails?.map { it.toExpressTrace() }
                                         } else {
                                             // Get the company code
                                             val convertedCompanyCode =
                                                 ExpressCompanyUtils.convertCode(companyCode)
-                                                    ?: ExpressRepository.queryCompanyActual(mailNumber, secretKey!!)[0].companyCode
+                                                    ?: ExpressActualRepository.queryCompanyActual(mailNumber, secretKey!!)[0].companyCode
 
                                             // Get the details
                                             val phoneNumber = expressInfoWrapper.phone
-                                            val response = ExpressRepository.queryExpressActual(
-                                                mailNumber,
+                                            val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(
                                                 convertedCompanyCode,
+                                                mailNumber,
                                                 phoneNumber,
                                                 secretKey!!,
                                                 customer!!
                                             )
 
-                                            response.data
-                                        }
+                                            response.data?.map { it.toExpressTrace() }
+                                        }?.sortedDescending()
 
                                         // Ignore invalid result
                                         if (detailList.isNullOrEmpty()) {
@@ -195,8 +188,8 @@ class HookEntry : IYukiHookXposedInit {
                                                 // Null list, create a new instance and put the latest detail
                                                 val newDetail = detailClass.newInstance()
                                                 val newDetailWrapper = newDetail.toExpressInfoDetailWrapper()
-                                                newDetailWrapper.desc = detailList[0].context
-                                                newDetailWrapper.time = detailList[0].formattedTime
+                                                newDetailWrapper.desc = detailList[0].description
+                                                newDetailWrapper.time = detailList[0].fullDateTime
                                                 val newDetails = ArrayList<Any>(1)
                                                 newDetails.add(newDetail)
                                                 expressInfoWrapper.details = newDetails
@@ -205,15 +198,15 @@ class HookEntry : IYukiHookXposedInit {
                                                 // Empty list, put the latest detail
                                                 val newDetail = detailClass.newInstance()
                                                 val newDetailWrapper = newDetail.toExpressInfoDetailWrapper()
-                                                newDetailWrapper.desc = detailList[0].context
-                                                newDetailWrapper.time = detailList[0].formattedTime
+                                                newDetailWrapper.desc = detailList[0].description
+                                                newDetailWrapper.time = detailList[0].fullDateTime
                                                 originalDetails.add(newDetail)
                                             }
                                             else -> {
                                                 // Normally, the original details contains one item
                                                 expressInfoWrapper.details?.getOrNull(0)
                                                     ?.toExpressInfoDetailWrapper()
-                                                    ?.desc = detailList[0].context
+                                                    ?.desc = detailList[0].description
                                             }
                                         }
                                     }

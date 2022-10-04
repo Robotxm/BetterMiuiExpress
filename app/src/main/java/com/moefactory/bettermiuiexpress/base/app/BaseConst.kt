@@ -32,3 +32,5 @@ const val PA_EXPRESS_INFO_DETAIL_OLD =
     "com.miui.personalassistant.express.bean.ExpressInfo\$Detail"
 const val PA_EXPRESS_INFO_DETAIL =
     "com.miui.personalassistant.service.express.bean.ExpressInfo\$Detail"
+
+const val CAI_NIAO_APP_KEY = "12574478"
