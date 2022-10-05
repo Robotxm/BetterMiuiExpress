@@ -37,6 +37,10 @@ class ExpressInfoWrapper(private val expressInfoObject: Any) {
                 .getMethod("setDetails", java.util.ArrayList::class.java)
                 .invoke(expressInfoObject, value)
         }
+
+    override fun toString(): String {
+        return "ExpressInfoWrapper(provider=$provider, companyCode='$companyCode', orderNumber='$orderNumber', clickDisappear=$clickDisappear, phone='$phone', details=$details)"
+    }
 }
 
 val ExpressInfoWrapper.isXiaomi: Boolean

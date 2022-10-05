@@ -4,6 +4,9 @@ import android.content.Context
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.factory.configs
 import com.highcapable.yukihookapi.hook.factory.encase
+import com.highcapable.yukihookapi.hook.factory.method
+import com.highcapable.yukihookapi.hook.log.loggerD
+import com.highcapable.yukihookapi.hook.type.android.ContextClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
@@ -33,21 +36,23 @@ class HookEntry : IYukiHookXposedInit {
         get() = secretKey.isNullOrBlank() || customer.isNullOrBlank()
 
     override fun onInit() = configs {
-        debugTag = "BetterMiuiExpress"
         isDebug = BuildConfig.DEBUG
+        debugLog {
+            tag = "BetterMiuiExpress"
+        }
     }
 
     override fun onHook() = encase {
         loadApp(name = PA_PACKAGE_NAME) {
-            val expressEntryClass = if (PA_EXPRESS_ENTRY.hasClass) PA_EXPRESS_ENTRY.clazz
-            else PA_EXPRESS_ENTRY_OLD.clazz
-
             // Old version
             // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2)
             // New version
             // public static String gotoExpressDetailPage(Context context, View view, ExpressEntry expressEntry, boolean z, boolean z2, Intent intent, int i2)
             findClass(PA_EXPRESS_INTENT_UTILS, PA_EXPRESS_INTENT_UTILS_OLD)
                 .hook {
+                    val expressEntryClass =
+                        PA_EXPRESS_ENTRY.toClassOrNull() ?: PA_EXPRESS_ENTRY_OLD.toClassOrNull()
+                        ?: return@hook
                     injectMember {
                         var isNewVersion = false
 
@@ -67,7 +72,7 @@ class HookEntry : IYukiHookXposedInit {
                                     IntType
                                 )
                             }.onFind { isNewVersion = true }
-                        }.ignoredError()
+                        }
 
                         replaceAny {
                             val context = args().first().cast<Context>()!!
@@ -78,7 +83,7 @@ class HookEntry : IYukiHookXposedInit {
                             }
 
                             // Other details will be processed normally
-                            return@replaceAny method.invokeOriginal(*args)
+                            return@replaceAny invokeOriginal(*args)
                         }
                     }
                 }
@@ -96,6 +101,7 @@ class HookEntry : IYukiHookXposedInit {
                             runBlocking {
                                 val expressInfoList = args().first().cast<java.util.List<*>>()
                                     ?.map { it.toExpressInfoWrapper() }
+                                    ?.onEach { loggerD(msg = it.toString()) }
                                     ?.filter { !it.isXiaomiOrJingDong } // Skip packages from Xiaomi and JingDong
                                     ?: return@runBlocking
                                 for (expressInfoWrapper in expressInfoList) {
@@ -114,8 +120,9 @@ class HookEntry : IYukiHookXposedInit {
 
                                     // Save latest trace
                                     val detailClass =
-                                        if (PA_EXPRESS_INFO_DETAIL.hasClass) PA_EXPRESS_INFO_DETAIL.clazz
-                                        else PA_EXPRESS_INFO_DETAIL_OLD.clazz
+                                        PA_EXPRESS_INFO_DETAIL.toClassOrNull()
+                                            ?: PA_EXPRESS_INFO_DETAIL_OLD.toClassOrNull()
+                                            ?: return@runBlocking
                                     saveLatestExpressTrace(
                                         expressInfoWrapper,
                                         detailClass,
@@ -126,6 +133,72 @@ class HookEntry : IYukiHookXposedInit {
                         }
                     }
                 }
+
+            findClass(
+                PA_EXPRESS_SEARCH_FRAGMENT_RESULT_VIEW,
+                PA_EXPRESS_SEARCH_FRAGMENT_RESULT_VIEW_OLD
+            ).hook {
+                val expressEntryClass =
+                    PA_EXPRESS_ENTRY.toClassOrNull() ?: PA_EXPRESS_ENTRY_OLD.toClassOrNull()
+                    ?: return@hook
+                injectMember {
+                    method {
+                        name = "onActionSearch"
+                        param(CharSequenceClass)
+                    }
+                    afterHook {
+                        val queryExpress = field { name = "mQueryExpress" }
+                            .ignored()
+                            .get(instance)
+                            .any() ?: return@afterHook
+
+                        val cacheClass =
+                            PA_EXPRESS_CACHE.toClassOrNull() ?: PA_EXPRESS_CACHE_OLD.toClassOrNull()
+                            ?: return@afterHook
+
+                        // Save express queried manually
+                        cacheClass.method {
+                            name = "putExpressEntry"
+                            param(ContextClass, expressEntryClass)
+                            returnType(BooleanPrimitiveType)
+                        }.get().call(appContext, queryExpress)
+
+                        val originalList = cacheClass.method {
+                            name = "getServerCache"
+                            param(ContextClass)
+                            returnType(JavaListClass)
+                        }.get().invoke<java.util.List<String>>(appContext) as? java.util.ArrayList<String> // java.util.Arrays$ArrayList is private so we have to cast twice
+
+                        val queryExpressEntryWrapper = ExpressEntryWrapper(queryExpress)
+                        val newList = originalList?.map { it }?.toMutableList() ?: mutableListOf()
+                        newList.add(queryExpressEntryWrapper.orderNumber)
+
+                        // TODO: Only express in server cache will be processed by MIUI. However,
+                        //       the server cache will be refresh automatically so that all modification
+                        //       will be discarded
+
+                        cacheClass.method {
+                            name = "putServerCache"
+                            param(ContextClass, JavaArrayListClass)
+                            returnType(BooleanPrimitiveType)
+                        }.get().call(appContext, newList)
+
+                        val repositoryClass =
+                            PA_EXPRESS_REPOSITOIRY.toClassOrNull()
+                                ?: PA_EXPRESS_REPOSITORY_OLD.toClassOrNull()
+                                ?: return@afterHook
+
+                        repositoryClass.method {
+                            name = "getInstance"
+                            param(ContextClass)
+                        }.get().call(appContext)?.let { repositoryInstance ->
+                            repositoryClass.method { name = "requestExpressAll" }
+                                .get(repositoryInstance)
+                                .call()
+                        }
+                    }
+                }
+            }
         }
     }
 

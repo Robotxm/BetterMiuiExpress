@@ -33,4 +33,12 @@ const val PA_EXPRESS_INFO_DETAIL_OLD =
 const val PA_EXPRESS_INFO_DETAIL =
     "com.miui.personalassistant.service.express.bean.ExpressInfo\$Detail"
 
+const val PA_EXPRESS_SEARCH_FRAGMENT_RESULT_VIEW_OLD =
+    "com.miui.personalassistant.express.search.ExpressSearchFragment\$ResultView"
+const val PA_EXPRESS_SEARCH_FRAGMENT_RESULT_VIEW =
+    "com.miui.personalassistant.service.express.search.ExpressSearchFragment\$ResultView"
+
+const val PA_EXPRESS_CACHE_OLD = "com.miui.personalassistant.express.db.Cache"
+const val PA_EXPRESS_CACHE = "com.miui.personalassistant.service.express.db.Cache"
+
 const val CAI_NIAO_APP_KEY = "12574478"
