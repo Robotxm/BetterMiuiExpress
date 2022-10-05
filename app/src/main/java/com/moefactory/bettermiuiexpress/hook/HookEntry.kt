@@ -33,21 +33,23 @@ class HookEntry : IYukiHookXposedInit {
         get() = secretKey.isNullOrBlank() || customer.isNullOrBlank()
 
     override fun onInit() = configs {
-        debugTag = "BetterMiuiExpress"
         isDebug = BuildConfig.DEBUG
+        debugLog {
+            tag = "BetterMiuiExpress"
+        }
     }
 
     override fun onHook() = encase {
         loadApp(name = PA_PACKAGE_NAME) {
-            val expressEntryClass = if (PA_EXPRESS_ENTRY.hasClass) PA_EXPRESS_ENTRY.clazz
-            else PA_EXPRESS_ENTRY_OLD.clazz
-
             // Old version
             // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2)
             // New version
             // public static String gotoExpressDetailPage(Context context, View view, ExpressEntry expressEntry, boolean z, boolean z2, Intent intent, int i2)
             findClass(PA_EXPRESS_INTENT_UTILS, PA_EXPRESS_INTENT_UTILS_OLD)
                 .hook {
+                    val expressEntryClass =
+                        PA_EXPRESS_ENTRY.toClassOrNull() ?: PA_EXPRESS_ENTRY_OLD.toClassOrNull()
+                        ?: return@loadApp
                     injectMember {
                         var isNewVersion = false
 
@@ -67,7 +69,7 @@ class HookEntry : IYukiHookXposedInit {
                                     IntType
                                 )
                             }.onFind { isNewVersion = true }
-                        }.ignoredError()
+                        }
 
                         replaceAny {
                             val context = args().first().cast<Context>()!!
@@ -78,7 +80,7 @@ class HookEntry : IYukiHookXposedInit {
                             }
 
                             // Other details will be processed normally
-                            return@replaceAny method.invokeOriginal(*args)
+                            return@replaceAny invokeOriginal(*args)
                         }
                     }
                 }
@@ -114,8 +116,9 @@ class HookEntry : IYukiHookXposedInit {
 
                                     // Save latest trace
                                     val detailClass =
-                                        if (PA_EXPRESS_INFO_DETAIL.hasClass) PA_EXPRESS_INFO_DETAIL.clazz
-                                        else PA_EXPRESS_INFO_DETAIL_OLD.clazz
+                                        PA_EXPRESS_INFO_DETAIL.toClassOrNull()
+                                            ?: PA_EXPRESS_INFO_DETAIL_OLD.toClassOrNull()
+                                            ?: return@runBlocking
                                     saveLatestExpressTrace(
                                         expressInfoWrapper,
                                         detailClass,
