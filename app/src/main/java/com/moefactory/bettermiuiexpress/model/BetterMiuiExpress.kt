@@ -10,8 +10,7 @@ data class MiuiExpress(
     val companyCode: String,
     val companyName: String,
     val mailNumber: String,
-    val phoneNumber: String?,
-    val secretKey: String?
+    val phoneNumber: String?
 ) : Parcelable
 
 @Parcelize

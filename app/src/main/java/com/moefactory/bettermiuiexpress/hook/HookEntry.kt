@@ -73,47 +73,8 @@ class HookEntry : IYukiHookXposedInit {
                             val context = args().first().cast<Context>()!!
                             val expressEntry = args(index = if (isNewVersion) 2 else 1).any()!!
                             val expressEntryWrapper = expressEntry.toExpressEntryWrapper()
-                            val companyCode = expressEntryWrapper.companyCode
-                            val companyName = expressEntryWrapper.companyName
-                            val mailNumber = expressEntryWrapper.orderNumber
-                            val phoneNumber = expressEntryWrapper.phone
-                            // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
-                            val uris = expressEntryWrapper.uris
-                            val caiNiaoSecretKey = expressEntryWrapper.secretKey
-                            if (!uris.isNullOrEmpty()) {
-                                // Store urls for future use such as jumping to third-party apps
-                                val uriList = arrayListOf<String>()
-                                for (uriEntity in uris) {
-                                    val uriString = uriEntity!!.javaClass.getMethod("getLink")
-                                        .invoke(uriEntity) as String
-                                    uriList.add(uriString)
-                                }
-                                ExpressDetailsActivity.gotoDetailsActivity(
-                                    context,
-                                    MiuiExpress(companyCode, companyName, mailNumber, phoneNumber, caiNiaoSecretKey),
-                                    uriList
-                                )
+                            if (jumpToDetailsActivity(context, expressEntryWrapper)) {
                                 return@replaceAny null
-                            } else {
-                                val provider = expressEntry.javaClass.getMethod("getProvider")
-                                    .invoke(expressEntry) as? String
-                                val isXiaomi = provider == "Miguo" || provider == "MiMall"
-                                val isJingDong = companyCode == "JDKD"
-                                // Details of packages from Xiaomi or JingDong will be showed in built-in app
-                                if (!isXiaomi && !isJingDong) {
-                                    ExpressDetailsActivity.gotoDetailsActivity(
-                                        context,
-                                        MiuiExpress(
-                                            companyCode,
-                                            companyName,
-                                            mailNumber,
-                                            phoneNumber,
-                                            caiNiaoSecretKey
-                                        ),
-                                        null
-                                    )
-                                    return@replaceAny null
-                                }
                             }
 
                             // Other details will be processed normally
@@ -133,88 +94,131 @@ class HookEntry : IYukiHookXposedInit {
                         }
                         beforeHook {
                             runBlocking {
-                                args().first().cast<java.util.List<*>>()?.let { expressInfoList ->
-                                    for (expressInfo in expressInfoList) {
-                                        // Skip packages from Xiaomi and JingDong
-                                        val expressInfoWrapper = expressInfo.toExpressInfoWrapper()
-                                        val provider = expressInfoWrapper.provider
-                                        val isXiaomi = provider == "Miguo" || provider == "MiMall"
-                                        val companyCode = expressInfoWrapper.companyCode
-                                        val companyName = expressInfoWrapper.companyName
-                                        val isJingDong = companyCode == "JDKD"
-                                        if (isXiaomi || isJingDong) {
-                                            continue
-                                        }
+                                val expressInfoList = args().first().cast<java.util.List<*>>()
+                                    ?.map { it.toExpressInfoWrapper() }
+                                    ?.filter { !it.isXiaomiOrJingDong } // Skip packages from Xiaomi and JingDong
+                                    ?: return@runBlocking
+                                for (expressInfoWrapper in expressInfoList) {
+                                    val companyCode = expressInfoWrapper.companyCode
+                                    val mailNumber = expressInfoWrapper.orderNumber
+                                    val phoneNumber = expressInfoWrapper.phone
 
-                                        val mailNumber = expressInfoWrapper.orderNumber
-                                        val caiNiaoSecretKey = expressInfoWrapper.secretKey
+                                    val detailList = fetchExpressDetails(
+                                        mailNumber, companyCode, phoneNumber
+                                    )
 
-                                        val detailList = if (shouldFetchFromCaiNiao) {
-                                            ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(
-                                                mailNumber
-                                            )?.fullTraceDetails?.map { it.toExpressTrace() }
-                                        } else {
-                                            // Get the company code
-                                            val convertedCompanyCode =
-                                                ExpressCompanyUtils.convertCode(companyCode)
-                                                    ?: ExpressActualRepository.queryCompanyActual(mailNumber, secretKey!!)[0].companyCode
-
-                                            // Get the details
-                                            val phoneNumber = expressInfoWrapper.phone
-                                            val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(
-                                                convertedCompanyCode,
-                                                mailNumber,
-                                                phoneNumber,
-                                                secretKey!!,
-                                                customer!!
-                                            )
-
-                                            response.data?.map { it.toExpressTrace() }
-                                        }?.sortedDescending()
-
-                                        // Ignore invalid result
-                                        if (detailList.isNullOrEmpty()) {
-                                            continue
-                                        }
-
-                                        // Prevent detail from disappearing
-                                        expressInfoWrapper.clickDisappear = false
-                                        val originalDetails = expressInfoWrapper.details
-                                        val detailClass =
-                                            if (PA_EXPRESS_INFO_DETAIL.hasClass) PA_EXPRESS_INFO_DETAIL.clazz
-                                            else PA_EXPRESS_INFO_DETAIL_OLD.clazz
-                                        when {
-                                            originalDetails == null -> {
-                                                // Null list, create a new instance and put the latest detail
-                                                val newDetail = detailClass.newInstance()
-                                                val newDetailWrapper = newDetail.toExpressInfoDetailWrapper()
-                                                newDetailWrapper.desc = detailList[0].description
-                                                newDetailWrapper.time = detailList[0].fullDateTime
-                                                val newDetails = ArrayList<Any>(1)
-                                                newDetails.add(newDetail)
-                                                expressInfoWrapper.details = newDetails
-                                            }
-                                            originalDetails.isEmpty() -> {
-                                                // Empty list, put the latest detail
-                                                val newDetail = detailClass.newInstance()
-                                                val newDetailWrapper = newDetail.toExpressInfoDetailWrapper()
-                                                newDetailWrapper.desc = detailList[0].description
-                                                newDetailWrapper.time = detailList[0].fullDateTime
-                                                originalDetails.add(newDetail)
-                                            }
-                                            else -> {
-                                                // Normally, the original details contains one item
-                                                expressInfoWrapper.details?.getOrNull(0)
-                                                    ?.toExpressInfoDetailWrapper()
-                                                    ?.desc = detailList[0].description
-                                            }
-                                        }
+                                    // Ignore invalid result
+                                    if (detailList.isNullOrEmpty()) {
+                                        continue
                                     }
+
+                                    // Save latest trace
+                                    val detailClass =
+                                        if (PA_EXPRESS_INFO_DETAIL.hasClass) PA_EXPRESS_INFO_DETAIL.clazz
+                                        else PA_EXPRESS_INFO_DETAIL_OLD.clazz
+                                    saveLatestExpressTrace(
+                                        expressInfoWrapper,
+                                        detailClass,
+                                        detailList
+                                    )
                                 }
                             }
                         }
                     }
                 }
         }
+    }
+
+    private fun saveLatestExpressTrace(
+        expressInfoWrapper: ExpressInfoWrapper,
+        detailClass: Class<out Any>,
+        detailList: List<ExpressTrace>
+    ) {
+        // Prevent detail from disappearing
+        expressInfoWrapper.clickDisappear = false
+        val originalDetails = expressInfoWrapper.details
+        when {
+            originalDetails == null -> {
+                // Null list, create a new instance and put the latest detail
+                val newDetail = detailClass.newInstance()
+                val newDetailWrapper =
+                    newDetail.toExpressInfoDetailWrapper()
+                newDetailWrapper.desc = detailList[0].description
+                newDetailWrapper.time = detailList[0].fullDateTime
+                val newDetails = ArrayList<Any>(1)
+                newDetails.add(newDetail)
+                expressInfoWrapper.details = newDetails
+            }
+            originalDetails.isEmpty() -> {
+                // Empty list, put the latest detail
+                val newDetail = detailClass.newInstance()
+                val newDetailWrapper =
+                    newDetail.toExpressInfoDetailWrapper()
+                newDetailWrapper.desc = detailList[0].description
+                newDetailWrapper.time = detailList[0].fullDateTime
+                originalDetails.add(newDetail)
+            }
+            else -> {
+                // Normally, the original details contains one item
+                expressInfoWrapper.details?.getOrNull(0)
+                    ?.toExpressInfoDetailWrapper()
+                    ?.desc = detailList[0].description
+            }
+        }
+    }
+
+    private fun jumpToDetailsActivity(
+        context: Context, expressEntryWrapper: ExpressEntryWrapper
+    ): Boolean {
+        val companyCode = expressEntryWrapper.companyCode
+        val companyName = expressEntryWrapper.companyName
+        val mailNumber = expressEntryWrapper.orderNumber
+        val phoneNumber = expressEntryWrapper.phone
+        // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
+        val uris = expressEntryWrapper.uris
+        if (!uris.isNullOrEmpty()) {
+            // Store urls for future use such as jumping to third-party apps
+            ExpressDetailsActivity.gotoDetailsActivity(
+                context,
+                MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
+                ArrayList(uris.map { it!!.toExpressInfoUriWrapper().link })
+            )
+            return true
+        } else {
+            // Details of packages from Xiaomi or JingDong will be showed in built-in app
+            if (!expressEntryWrapper.isXiaomiOrJingDong) {
+                ExpressDetailsActivity.gotoDetailsActivity(
+                    context,
+                    MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
+                    null
+                )
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private suspend fun fetchExpressDetails(
+        mailNumber: String, originalCompanyCode: String, phoneNumber: String
+    ): List<ExpressTrace>? {
+        return if (shouldFetchFromCaiNiao) {
+            ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber)
+                ?.fullTraceDetails?.map { it.toExpressTrace() }
+        } else {
+            // Get the company code
+            val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
+                ?: ExpressActualRepository.queryCompanyActual(
+                    mailNumber,
+                    secretKey!!
+                )[0].companyCode
+
+            // Get the details
+            val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(
+                convertedCompanyCode, mailNumber, phoneNumber, secretKey!!, customer!!
+            )
+
+            response.data?.map { it.toExpressTrace() }
+        }?.sortedDescending()
     }
 }
