@@ -5,4 +5,8 @@
         android:id="@+id/action_jump"
         android:title="@string/jump_to_third_party_app"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_jump_to_cainiao"
+        android:title="@string/jump_to_cainiao"
+        app:showAsAction="never"/>
 </menu>

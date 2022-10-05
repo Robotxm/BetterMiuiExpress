@@ -171,6 +171,11 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 finish()
                 true
             }
+            R.id.action_jump_to_cainiao -> {
+                startCainiaoAppByMailNumber(miuiExpress!!.mailNumber)
+                finish()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -195,6 +200,19 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             } catch (_: Exception) {
                 // No need to process
             }
+        }
+    }
+
+    private fun startCainiaoAppByMailNumber(mailNumber: String) {
+        try {
+            startActivity(
+                Intent(Intent.ACTION_VIEW)
+                    .addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    .setData(Uri.parse("cainiao://startapp/logistic?mailNo=" + mailNumber))
+            )
+        } catch (_: Exception) {
+            Toast.makeText(this, getString(R.string.jump_to_cainiao_failed), Toast.LENGTH_SHORT).show()
         }
     }
 

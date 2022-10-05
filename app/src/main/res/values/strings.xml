@@ -25,4 +25,6 @@
     <string name="key_field_hint">快递 100 授权码 key</string>
     <string name="save_config">保存</string>
     <string name="express_trace_date_time">%1$s\n%2$s</string>
+    <string name="jump_to_cainiao">转到菜鸟</string>
+    <string name="jump_to_cainiao_failed">菜鸟启动失败，请确认菜鸟应用已安装</string>
 </resources>
