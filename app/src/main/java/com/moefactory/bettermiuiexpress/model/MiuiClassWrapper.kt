@@ -1,11 +1,18 @@
 package com.moefactory.bettermiuiexpress.model
 
+import android.os.Parcelable
 import com.moefactory.bettermiuiexpress.ktx.BooleanPrimitiveType
 import com.moefactory.bettermiuiexpress.ktx.JavaStringClass
+import kotlinx.parcelize.Parcelize
 
 fun Any.toExpressInfoWrapper() = ExpressInfoWrapper(this)
 
-fun Any.toExpressInfoUriWrapper() = ExpressInfoUriWrapper(this)
+fun Any.toExpressInfoUriWrapper(): ExpressInfoUriWrapper {
+    val expressInfoUriClass = this.javaClass
+    val link = expressInfoUriClass.getMethod("getLink").invoke(this) as String
+    val priority = expressInfoUriClass.getMethod("getPriority").invoke(this) as Int
+    return ExpressInfoUriWrapper(link, priority)
+}
 
 fun Any.toExpressEntryWrapper() = ExpressEntryWrapper(this)
 
@@ -46,12 +53,15 @@ val ExpressInfoWrapper.isJingDong: Boolean
 val ExpressInfoWrapper.isXiaomiOrJingDong: Boolean
     get() = isXiaomi || isJingDong
 
-class ExpressInfoUriWrapper(private val expressInfoUriObject: Any) {
+@Parcelize
+data class ExpressInfoUriWrapper(
+    var link: String,
+    var priority: Int
+) : Comparable<ExpressInfoUriWrapper>, Parcelable {
 
-    private val expressInfoUriClass = expressInfoUriObject.javaClass
-
-    val link: String
-        get() = expressInfoUriClass.getMethod("getLink").invoke(expressInfoUriObject) as String
+    override fun compareTo(other: ExpressInfoUriWrapper): Int {
+        return priority - other.priority
+    }
 }
 
 class ExpressEntryWrapper(private val expressEntryObject: Any) {

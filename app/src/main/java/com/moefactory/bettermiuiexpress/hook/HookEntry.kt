@@ -184,7 +184,7 @@ class HookEntry : IYukiHookXposedInit {
             ExpressDetailsActivity.gotoDetailsActivity(
                 context,
                 MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
-                ArrayList(uris.map { it!!.toExpressInfoUriWrapper().link })
+                ArrayList(uris.map { it!!.toExpressInfoUriWrapper() })
             )
             return true
         } else {
