@@ -35,6 +35,7 @@ import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
 import com.moefactory.bettermiuiexpress.databinding.ItemTimelineNodeBinding
 import com.moefactory.bettermiuiexpress.ktx.dp
+import com.moefactory.bettermiuiexpress.model.ExpressInfoUriWrapper
 import com.moefactory.bettermiuiexpress.model.ExpressTrace
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
 import com.moefactory.bettermiuiexpress.model.TimelineAttributes
@@ -51,20 +52,20 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         fun gotoDetailsActivity(
             context: Context,
             miuiExpress: MiuiExpress,
-            urlList: ArrayList<String>?
+            uris: ArrayList<ExpressInfoUriWrapper>?
         ) {
             if (context is Activity) { // Click items in details activity
                 context.startActivity(
                     Intent(ACTION_GO_TO_DETAILS)
                         .putExtra(INTENT_EXPRESS_SUMMARY, miuiExpress)
-                        .putExtra(INTENT_URL_CANDIDATES, urlList)
+                        .putExtra(INTENT_URL_CANDIDATES, uris)
                 )
             } else { // Click items in card
                 context.startActivity(
                     Intent(ACTION_GO_TO_DETAILS)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         .putExtra(INTENT_EXPRESS_SUMMARY, miuiExpress)
-                        .putExtra(INTENT_URL_CANDIDATES, urlList)
+                        .putExtra(INTENT_URL_CANDIDATES, uris)
                 )
             }
         }
@@ -72,7 +73,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
     override val viewBinding by viewBinding(ActivityExpressDetailsBinding::inflate)
     private val miuiExpress by lazy { intent.getParcelableExtra<MiuiExpress>(INTENT_EXPRESS_SUMMARY) }
-    private val urlCandidates by lazy { intent.getStringArrayListExtra(INTENT_URL_CANDIDATES) }
+    private val uris by lazy { intent.getParcelableArrayListExtra<ExpressInfoUriWrapper>(INTENT_URL_CANDIDATES) }
     private val viewModel by viewModels<ExpressDetailsViewModel>()
 
     private val pref by lazy { getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE) }
@@ -167,7 +168,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_jump -> {
-                startThirdAppByList(urlCandidates!!)
+                startThirdAppByUris(uris!!)
                 finish()
                 true
             }
@@ -176,20 +177,21 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        if (!urlCandidates.isNullOrEmpty()) {
+        if (!uris.isNullOrEmpty()) {
             menuInflater.inflate(R.menu.details_menu, menu)
         }
         return true
     }
 
-    private fun startThirdAppByList(urlCandidates: ArrayList<String>) {
-        for (url in urlCandidates) {
+    private fun startThirdAppByUris(uris: ArrayList<ExpressInfoUriWrapper>) {
+        uris.sort()
+        for (uri in uris) {
             try {
                 startActivity(
                     Intent(Intent.ACTION_VIEW)
                         .addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING)
                         .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                        .setData(Uri.parse(url))
+                        .setData(Uri.parse(uri.link))
                 )
                 return
             } catch (_: Exception) {
