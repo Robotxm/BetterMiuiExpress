@@ -30,7 +30,14 @@ class HookEntry : IYukiHookXposedInit {
     private val customer: String?
         get() = pref?.getString(PREF_KEY_CUSTOMER, null)
     private val shouldFetchFromCaiNiao: Boolean
-        get() = secretKey.isNullOrBlank() || customer.isNullOrBlank()
+        get() {
+            val useKuaidi100 = pref?.getBoolean(PREF_KEY_DATA_SOURCE, false) ?: false
+            return if (useKuaidi100) {
+                secretKey.isNullOrBlank() || customer.isNullOrBlank()
+            } else {
+                true
+            }
+        }
 
     override fun onInit() = configs {
         isDebug = BuildConfig.DEBUG

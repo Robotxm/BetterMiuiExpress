@@ -43,6 +43,20 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_data_source"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:background="@null"
+                android:layout_marginTop="12dp"
+                android:thumb="@drawable/switch_thumb"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:track="@drawable/switch_track"
+                tools:checked="true"
+                tools:text="@string/use_kuadi100" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_key"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -54,7 +68,7 @@
                 app:boxBackgroundColor="@color/miuiTextInputLayoutBackground"
                 app:boxStrokeWidth="0dp"
                 app:hintEnabled="false"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toBottomOf="@id/sw_data_source">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/tiet_key"
@@ -84,6 +98,13 @@
                     android:hint="@string/customer_field_hint" />
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/group_kuaidi100"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                tools:visibility="visible"
+                app:constraint_referenced_ids="til_key,til_customer" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save"

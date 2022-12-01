@@ -5,7 +5,7 @@
     <string name="save_successfully_cainiao">保存成功，数据源为菜鸟裹裹</string>
     <string name="save_successfully_kuaidi_100">保存成功，数据源为快递 100</string>
     <string name="unexpected_error">未知错误</string>
-    <string name="copyright">MIUI 快递组件便捷小工具，用于禁止强制跳转第三方快递应用。\n支持快递 100 和菜鸟裹裹两个数据源。\n如需使用快递 100 数据源，需要将快递 100 查询 API 的 customer 和 key 字段填入上方并保存。\n如需使用菜鸟裹裹数据源，将上方两个字段留空后保存即可。\n需跳转其他应用查看取件码，请通过详情页右上角进入。\n\n本模块在 GPLv3 许可下开放源代码，详情请转到 GitHub 查看。\n\nCopyright © 2021–2022 MoeFactory\nAll Rights Reserved.</string>
+    <string name="copyright">MIUI 快递组件便捷小工具，用于禁止强制跳转第三方快递应用。\n支持快递 100 和菜鸟裹裹两个数据源。\n如需使用快递 100 数据源，需要申请快递 100 查询 API 的 customer 和 key。\n如需跳转其他应用查看取件码，请通过详情页右上角进入。\n\n本模块在 GPLv3 许可下开放源代码，详情请转到 GitHub 查看。\n\nCopyright © 2021–2022 MoeFactory\nAll Rights Reserved.</string>
     <string name="yuki">此模块使用 YukiHookAPI 构建</string>
     <string name="yuki_version">YukiHookAPI 版本: %1$s (%2$d)</string>
     <string name="inactive">模块未激活</string>
@@ -25,4 +25,6 @@
     <string name="key_field_hint">快递 100 授权码 key</string>
     <string name="save_config">保存</string>
     <string name="express_trace_date_time">%1$s\n%2$s</string>
+    <string name="use_kuadi100">使用快递 100 数据源</string>
+    <string name="use_cainiao">使用菜鸟裹裹数据源</string>
 </resources>

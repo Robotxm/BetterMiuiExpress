@@ -7,9 +7,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.core.content.edit
+import androidx.core.view.isVisible
 import com.highcapable.yukihookapi.YukiHookAPI
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_CUSTOMER
+import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DATA_SOURCE
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_SECRET_KEY
 import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
@@ -28,19 +30,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
         setSupportActionBar(viewBinding.mtToolbar)
 
         viewBinding.btnSave.setOnClickListener {
+            val useKuaiDi100 = viewBinding.swDataSource.isChecked && !viewBinding.tietCustomer.text.isNullOrEmpty() && !viewBinding.tietKey.text.isNullOrEmpty()
             pref.edit {
                 putString(PREF_KEY_SECRET_KEY, viewBinding.tietKey.text?.toString() ?: "")
                 putString(PREF_KEY_CUSTOMER, viewBinding.tietCustomer.text?.toString() ?: "")
+                putBoolean(PREF_KEY_DATA_SOURCE, useKuaiDi100)
             }
-            if (viewBinding.tietCustomer.text.isNullOrEmpty() || viewBinding.tietKey.text.isNullOrEmpty()) {
-                Toast.makeText(this, R.string.save_successfully_cainiao, Toast.LENGTH_SHORT).show()
-            } else {
-                pref.edit {
-                    putString(PREF_KEY_SECRET_KEY, viewBinding.tietKey.text.toString())
-                    putString(PREF_KEY_CUSTOMER, viewBinding.tietCustomer.text.toString())
-                }
-
+            if (useKuaiDi100) {
                 Toast.makeText(this, R.string.save_successfully_kuaidi_100, Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, R.string.save_successfully_cainiao, Toast.LENGTH_SHORT).show()
             }
         }
         viewBinding.btnGithub.setOnClickListener {
@@ -58,6 +57,19 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
 
         viewBinding.tietCustomer.setText(pref.getString(PREF_KEY_CUSTOMER, "") ?: "")
         viewBinding.tietKey.setText(pref.getString(PREF_KEY_SECRET_KEY, "") ?: "")
+        val isFilledKuaidi100Credentials = !viewBinding.tietCustomer.text.isNullOrEmpty() && !viewBinding.tietKey.text.isNullOrEmpty()
+        viewBinding.swDataSource.isChecked =
+            pref.getBoolean(
+                PREF_KEY_DATA_SOURCE,
+                isFilledKuaidi100Credentials
+            )
+        viewBinding.swDataSource.setText(if (viewBinding.swDataSource.isChecked) R.string.use_kuadi100 else R.string.use_cainiao )
+        viewBinding.groupKuaidi100.isVisible = viewBinding.swDataSource.isChecked
+
+        viewBinding.swDataSource.setOnCheckedChangeListener { view, isChecked ->
+            viewBinding.groupKuaidi100.isVisible = isChecked
+            view.setText(if (isChecked) R.string.use_kuadi100 else R.string.use_cainiao )
+        }
 
         viewBinding.tvYukiVersion.text =
             getString(R.string.yuki_version, YukiHookAPI.API_VERSION_NAME, YukiHookAPI.API_VERSION_CODE)

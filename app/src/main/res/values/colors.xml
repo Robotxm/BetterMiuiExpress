@@ -3,7 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="miuiMainColor">#0D84FF</color>
+    <color name="miuiPrimaryColor">#0D84FF</color>
     <color name="miuiAccentColor">#FFC000</color>
 
     <color name="miuiTextInputLayoutBackground">#F0F0F0</color>
@@ -34,4 +34,6 @@
     <color name="pa_express_detail_express_number_color">#99000000</color>
 
     <color name="blackTextColor">#000000</color>
+
+    <color name="switchTrackColor">#E6E6E6</color>
 </resources>

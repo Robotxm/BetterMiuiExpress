@@ -29,12 +29,13 @@ class ExpressDetailsViewModel : ViewModel() {
         mailNumber: String,
         companyCode: String?,
         phoneNumber: String?,
-        secretKey: String?,
-        customer: String?
+        shouldFetchFromCaiNiao: Boolean,
+        secretKey: String? = null,
+        customer: String? = null
     ) {
         viewModelScope.launch {
             // Fetch from CaiNiao
-            if (secretKey.isNullOrBlank() || customer.isNullOrBlank()
+            if (shouldFetchFromCaiNiao || secretKey.isNullOrBlank() || customer.isNullOrBlank()
                 || companyCode.isNullOrBlank() || phoneNumber?.isBlank() == true
             ) {
                 queryFromCaiNiao(mailNumber)

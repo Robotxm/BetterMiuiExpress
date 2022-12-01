@@ -29,6 +29,7 @@ import com.drake.brv.utils.setup
 import com.github.vipulasri.timelineview.TimelineView
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_CUSTOMER
+import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DATA_SOURCE
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_SECRET_KEY
 import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
@@ -81,6 +82,15 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         get() = pref?.getString(PREF_KEY_SECRET_KEY, null)
     private val customer: String?
         get() = pref?.getString(PREF_KEY_CUSTOMER, null)
+    private val shouldFetchFromCaiNiao: Boolean
+        get() {
+            val useKuaidi100 = pref?.getBoolean(PREF_KEY_DATA_SOURCE, false) ?: false
+            return if (useKuaidi100) {
+                secretKey.isNullOrBlank() || customer.isNullOrBlank()
+            } else {
+                true
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -132,6 +142,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 miuiExpress!!.mailNumber,
                 it.companyCode,
                 miuiExpress!!.phoneNumber,
+                shouldFetchFromCaiNiao,
                 secretKey!!,
                 customer!!
             )
@@ -161,6 +172,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             miuiExpress!!.mailNumber,
             miuiExpress!!.companyCode,
             miuiExpress!!.phoneNumber,
+            shouldFetchFromCaiNiao,
             secretKey, customer
         )
     }

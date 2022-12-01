@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.BetterMiuiExpress" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/miuiMainColor</item>
+        <item name="colorPrimary">@color/miuiPrimaryColor</item>
         <item name="colorPrimaryVariant">#FFFFFF</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <!-- Secondary brand color. -->
