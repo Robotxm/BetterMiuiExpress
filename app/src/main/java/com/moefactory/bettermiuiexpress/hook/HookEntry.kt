@@ -48,6 +48,34 @@ class HookEntry : IYukiHookXposedInit {
 
     override fun onHook() = encase {
         loadApp(name = PA_PACKAGE_NAME) {
+            // From PA 5.5.55, use ExpressRouter
+            // public static void route(Context context, Object obj, ExpressEntry expressEntry)
+            findClass(PA_EXPRESS_ROUTER)
+                .hook {
+                    val expressEntryClass =
+                        PA_EXPRESS_ENTRY.toClassOrNull() ?: PA_EXPRESS_ENTRY_OLD.toClassOrNull()
+                        ?: return@loadApp
+                    injectMember {
+                        method {
+                            name = "route"
+                            param(ContextClass, ObjectClass, expressEntryClass)
+                        }
+
+                        replaceAny {
+                            val context = args().first().cast<Context>()!!
+                            val expressEntry = args(2).any()!!
+                            val expressEntryWrapper = expressEntry.toExpressEntryWrapper()
+                            if (jumpToDetailsActivity(context, expressEntryWrapper)) {
+                                return@replaceAny null
+                            }
+
+                            // Other details will be processed normally
+                            return@replaceAny invokeOriginal(*args)
+                        }
+                    }
+                }
+
+
             // Old version
             // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2)
             // New version

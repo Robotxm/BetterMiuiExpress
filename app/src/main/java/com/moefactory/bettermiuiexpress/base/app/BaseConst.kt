@@ -16,6 +16,9 @@ const val PA_EXPRESS_INTENT_UTILS_OLD =
 const val PA_EXPRESS_INTENT_UTILS =
     "com.miui.personalassistant.service.express.ExpressIntentUtils"
 
+// Fully-qualified name of ExpressRouter
+const val PA_EXPRESS_ROUTER = "com.miui.personalassistant.service.express.route.ExpressRouter"
+
 // Fully-qualified name of ExpressEntry
 const val PA_EXPRESS_ENTRY_OLD =
     "com.miui.personalassistant.express.bean.ExpressEntry"
