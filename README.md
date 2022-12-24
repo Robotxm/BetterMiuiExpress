@@ -4,6 +4,8 @@ English | [中文](README.zh-Hans.md)
 
 BetterMiuiExpress is an Xposed module that prevents express details to be displayed in third-party apps such as Taobao, CaiNiao, etc. and shows a custom activity to display the details.
 
+**Privacy phone number in Taobao is not supported. If enabled, querying details of packages delivered by SF will fail.**
+
 ## Prerequisites
 
 - MIUI based on Android 7.0 or above.
