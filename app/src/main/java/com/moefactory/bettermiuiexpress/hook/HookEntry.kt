@@ -224,7 +224,7 @@ class HookEntry : IYukiHookXposedInit {
             return true
         } else {
             // Details of packages from Xiaomi or JingDong will be showed in built-in app
-            if (!expressEntryWrapper.isXiaomiOrJingDong) {
+            if (!expressEntryWrapper.shouldUseNativeUI) {
                 ExpressDetailsActivity.gotoDetailsActivity(
                     context,
                     MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
