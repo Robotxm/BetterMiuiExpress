@@ -89,8 +89,10 @@ val ExpressEntryWrapper.isJingDong: Boolean
     get() = companyCode == "JDKD"
 val ExpressEntryWrapper.isShunfeng: Boolean
     get() = provider == "ShunFeng"
+val ExpressEntryWrapper.isJiTu: Boolean
+    get() = provider == "JiTu"
 val ExpressEntryWrapper.shouldUseNativeUI: Boolean
-    get() = isXiaomi || isJingDong || isShunfeng
+    get() = isXiaomi || isJingDong || isShunfeng || isJiTu
 
 class ExpressInfoDetailWrapper(private val expressInfoDetailObject: Any) {
 
