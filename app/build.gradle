@@ -18,7 +18,7 @@ android {
         minSdk 24
         targetSdk 30
         versionCode 16
-        versionName "1.4.6"
+        versionName "1.5.0"
         resConfigs 'zh'
         generatedDensities = []
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
