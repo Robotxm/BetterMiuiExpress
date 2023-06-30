@@ -29,15 +29,8 @@ class HookEntry : IYukiHookXposedInit {
         get() = pref?.getString(PREF_KEY_SECRET_KEY, null)
     private val customer: String?
         get() = pref?.getString(PREF_KEY_CUSTOMER, null)
-    private val shouldFetchFromCaiNiao: Boolean
-        get() {
-            val useKuaidi100 = pref?.getBoolean(PREF_KEY_DATA_SOURCE, false) ?: false
-            return if (useKuaidi100) {
-                secretKey.isNullOrBlank() || customer.isNullOrBlank()
-            } else {
-                true
-            }
-        }
+    private val dataProvider: Int
+        get() = pref?.getInt(PREF_KEY_DATA_PROVIDER, DATA_PROVIDER_NEW_KUAIDI100) ?: DATA_PROVIDER_NEW_KUAIDI100
 
     override fun onInit() = configs {
         isDebug = BuildConfig.DEBUG
@@ -240,23 +233,34 @@ class HookEntry : IYukiHookXposedInit {
     private suspend fun fetchExpressDetails(
         mailNumber: String, originalCompanyCode: String, phoneNumber: String
     ): List<ExpressTrace>? {
-        return if (shouldFetchFromCaiNiao) {
-            ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber)
-                ?.fullTraceDetails?.map { it.toExpressTrace() }
-        } else {
-            // Get the company code
-            val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
-                ?: ExpressActualRepository.queryCompanyActual(
-                    mailNumber,
-                    secretKey!!
-                )[0].companyCode
+        when (dataProvider) {
+            DATA_PROVIDER_NEW_KUAIDI100 -> {
+                // Get the company code
+                val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
+                    ?: ExpressActualRepository.queryCompanyActual(mailNumber, secretKey)[0].companyCode
 
-            // Get the details
-            val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(
-                convertedCompanyCode, mailNumber, phoneNumber, secretKey!!, customer!!
-            )
+                val response = ExpressActualRepository.queryExpressDetailsFromNewKuaiDi100Actual(convertedCompanyCode, mailNumber, phoneNumber)
 
-            response.data?.map { it.toExpressTrace() }
-        }?.sortedDescending()
+                return response.lastResult?.data?.map { it.toExpressTrace() }?.sortedDescending()
+            }
+            DATA_PROVIDER_LEGACY_KUAIDI100 -> {
+                val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
+                    ?: ExpressActualRepository.queryCompanyActual(mailNumber, secretKey)[0].companyCode
+
+                val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(
+                    convertedCompanyCode, mailNumber, phoneNumber, secretKey!!, customer!!
+                )
+
+                return response.data?.map { it.toExpressTrace() }?.sortedDescending()
+            }
+            DATA_PROVIDER_CAINIAO -> {
+                return ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber)
+                    ?.fullTraceDetails
+                    ?.map { it.toExpressTrace() }
+                    ?.sortedDescending()
+            }
+            else -> return null
+        }
+
     }
 }

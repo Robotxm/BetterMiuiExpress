@@ -3,4 +3,9 @@
     <string-array name="xposed_scope">
         <item>com.miui.personalassistant</item>
     </string-array>
+    <string-array name="data_provider">
+        <item>@string/new_kuaidi100</item>
+        <item>@string/legacy_kuaidi100</item>
+        <item>@string/cainiao</item>
+    </string-array>
 </resources>

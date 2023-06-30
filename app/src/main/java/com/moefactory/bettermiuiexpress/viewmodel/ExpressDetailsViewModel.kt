@@ -3,6 +3,9 @@ package com.moefactory.bettermiuiexpress.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_CAINIAO
+import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_LEGACY_KUAIDI100
+import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_NEW_KUAIDI100
 import com.moefactory.bettermiuiexpress.ktx.toLiveData
 import com.moefactory.bettermiuiexpress.model.ExpressDetails
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
@@ -29,50 +32,51 @@ class ExpressDetailsViewModel : ViewModel() {
         mailNumber: String,
         companyCode: String?,
         phoneNumber: String?,
-        shouldFetchFromCaiNiao: Boolean,
+        dataProvider: Int,
         secretKey: String? = null,
         customer: String? = null
     ) {
         viewModelScope.launch {
-            // Fetch from CaiNiao
-            if (shouldFetchFromCaiNiao || secretKey.isNullOrBlank() || customer.isNullOrBlank()
-                || companyCode.isNullOrBlank() || phoneNumber?.isBlank() == true
-            ) {
+            if (dataProvider == DATA_PROVIDER_NEW_KUAIDI100 && !companyCode.isNullOrEmpty()) {
+                val convertedCompanyCode = ExpressCompanyUtils.convertCode(companyCode)
+                val flow = if (convertedCompanyCode != null) {
+                    queryFromNewKuaiDi100(mailNumber, convertedCompanyCode, phoneNumber)
+                } else {
+                    ExpressRepository.queryCompanyFromKuaiDi100(mailNumber, null)
+                        .flatMapConcat {
+                            val response = it.getOrNull()
+                            if (response.isNullOrEmpty()) {
+                                queryFromCaiNiao(mailNumber)
+                            } else {
+                                queryFromNewKuaiDi100(mailNumber, response[0].companyCode, phoneNumber)
+                            }
+                        }
+                }
+                flow.catch { _expressDetails.value = Result.failure(it) }
+                    .collect { _expressDetails.value = it }
+            } else if (dataProvider == DATA_PROVIDER_LEGACY_KUAIDI100 && !companyCode.isNullOrEmpty()
+                && (!secretKey.isNullOrBlank() &&! customer.isNullOrBlank())) {
+                val convertedCompanyCode = ExpressCompanyUtils.convertCode(companyCode)
+                val flow = if (convertedCompanyCode != null) {
+                    queryFromKuaiDi100(mailNumber, convertedCompanyCode, phoneNumber, secretKey, customer)
+                } else {
+                    ExpressRepository.queryCompanyFromKuaiDi100(mailNumber, secretKey)
+                        .flatMapConcat {
+                            val response = it.getOrNull()
+                            if (response.isNullOrEmpty()) {
+                                queryFromCaiNiao(mailNumber)
+                            } else {
+                                queryFromKuaiDi100(mailNumber, response[0].companyCode, phoneNumber, secretKey, customer)
+                            }
+                        }
+                }
+                flow.catch { _expressDetails.value = Result.failure(it) }
+                    .collect { _expressDetails.value = it }
+            } else {
                 queryFromCaiNiao(mailNumber)
                     .catch { _expressDetails.value = Result.failure(it) }
                     .collect { _expressDetails.value = it }
-
-                return@launch
             }
-
-            val convertedCompanyCode = ExpressCompanyUtils.convertCode(companyCode)
-            if (convertedCompanyCode != null) {
-                queryFromKuaiDi100(
-                    mailNumber,
-                    convertedCompanyCode,
-                    phoneNumber,
-                    secretKey,
-                    customer
-                )
-            } else {
-                ExpressRepository.queryCompanyFromKuaiDi100(mailNumber, secretKey)
-                    .flatMapConcat {
-                        val response = it.getOrNull()
-                        if (response.isNullOrEmpty()) {
-                            queryFromCaiNiao(mailNumber)
-                        } else {
-                            queryFromKuaiDi100(
-                                mailNumber,
-                                response[0].companyCode,
-                                phoneNumber,
-                                secretKey,
-                                customer
-                            )
-                        }
-                    }
-            }
-                .catch { _expressDetails.value = Result.failure(it) }
-                .collect { _expressDetails.value = it }
         }
     }
 
@@ -95,27 +99,42 @@ class ExpressDetailsViewModel : ViewModel() {
             }
 
     private fun queryFromKuaiDi100(
-        mailNumber: String,
-        companyCode: String,
-        phoneNumber: String?,
-        secretKey: String,
-        customer: String
-    ) = ExpressRepository.queryExpressDetailsFromKuaiDi100(
-        companyCode, mailNumber, phoneNumber, secretKey, customer
-    ).map {
-        val result = it.getOrNull()
-        if (result == null) {
-            Result.failure(Exception())
-        } else {
-            Result.success(
-                ExpressDetails(
-                    dataSource = "快递 100 ",
-                    status = KuaiDi100ExpressState.values()
-                        .first { s -> s.stateCode == result.state }.stateName,
-                    traces = result.data?.map { d -> d.toExpressTrace() }
-                        ?.sortedDescending() ?: listOf()
+        mailNumber: String, companyCode: String, phoneNumber: String?, secretKey: String, customer: String
+    ) = ExpressRepository.queryExpressDetailsFromKuaiDi100(companyCode, mailNumber, phoneNumber, secretKey, customer)
+        .map {
+            val result = it.getOrNull()
+            if (result == null) {
+                Result.failure(Exception())
+            } else {
+                Result.success(
+                    ExpressDetails(
+                        dataSource = "快递 100 ",
+                        status = KuaiDi100ExpressState.values()
+                            .first { s -> s.stateCode == result.state }.stateName,
+                        traces = result.data?.map { d -> d.toExpressTrace() }
+                            ?.sortedDescending() ?: listOf()
+                    )
                 )
-            )
+            }
         }
-    }
+
+    private fun queryFromNewKuaiDi100(
+        mailNumber: String, companyCode: String, phoneNumber: String?
+    ) = ExpressRepository.queryExpressDetailsFromNewKuaiDi100(companyCode, mailNumber, phoneNumber)
+        .map {
+            val result = it.getOrNull()
+            if (result == null) {
+                Result.failure(Exception())
+            } else {
+                Result.success(
+                    ExpressDetails(
+                        dataSource = "快递 100 ",
+                        status = KuaiDi100ExpressState.values()
+                            .first { s -> s.stateCode.toString() == result.lastResult?.state }.stateName,
+                        traces = result.lastResult?.data?.map { d -> d.toExpressTrace() }
+                            ?.sortedDescending() ?: listOf()
+                    )
+                )
+            }
+        }
 }

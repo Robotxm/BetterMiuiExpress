@@ -3,7 +3,7 @@ package com.moefactory.bettermiuiexpress.base.app
 const val PREF_NAME = "better_miui_express"
 const val PREF_KEY_SECRET_KEY = "secretKey"
 const val PREF_KEY_CUSTOMER = "customer"
-const val PREF_KEY_DATA_SOURCE = "dataSource"
+const val PREF_KEY_DATA_PROVIDER = "dataProvider"
 
 const val BME_MAIN_ACTIVITY_ALIAS = "com.moefactory.bettermiuiexpress.activity.MainActivityAlias"
 
@@ -38,3 +38,7 @@ const val PA_EXPRESS_INFO_DETAIL =
     "com.miui.personalassistant.service.express.bean.ExpressInfo\$Detail"
 
 const val CAI_NIAO_APP_KEY = "12574478"
+
+const val DATA_PROVIDER_NEW_KUAIDI100 = 0
+const val DATA_PROVIDER_LEGACY_KUAIDI100 = 1
+const val DATA_PROVIDER_CAINIAO = 2

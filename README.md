@@ -17,11 +17,17 @@ BetterMiuiExpress is an Xposed module that prevents express details to be displa
 The following instructions are based on LSPosed.
 
 - Make sure that your device has installed LSPosed or other Xposed-compatible frameworks **with XSharedPreferences support**
-- Download this module from CoolApk or compile by yourself
+- Download this module from CoolApk or compile by yourself. **If you are updating from 1.4.6 and below to newer, it is recommended to uninstall the old version first**
 - Enable this module and check MIUI Personal Assistant as the scope. You may unchecked the System Apps option in the menu to find it
-- If you want to retrieve express details from KuaiDi100, you need KuaiDi100 customer and secret key
+- The new KuaiDi100 provider does not require customer and key anymore. However, if you want to retrieve express details from legacy **KuaiDi100 (without 'New' tag)**, you still need KuaiDi100 customer and key
 - Kill the MIUI Personal Assistant apps manually in LSPosed or Settings
 - Swipe to MIUI Personal Assistant in the launcher. Now clicking the express items will not lead to jumping to third-party apps, and the latest express details will be displayed in the app widget
+
+## Supported data provider
+
+- KuaiDi100 (New)
+- KuaiDi100: **Customer and key required**
+- Cainiao
 
 ## For express delivered to CaiNiao Post House
 

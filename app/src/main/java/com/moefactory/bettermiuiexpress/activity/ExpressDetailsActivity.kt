@@ -28,8 +28,9 @@ import com.drake.brv.utils.models
 import com.drake.brv.utils.setup
 import com.github.vipulasri.timelineview.TimelineView
 import com.moefactory.bettermiuiexpress.R
+import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_NEW_KUAIDI100
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_CUSTOMER
-import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DATA_SOURCE
+import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DATA_PROVIDER
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_SECRET_KEY
 import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
@@ -82,15 +83,8 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         get() = pref?.getString(PREF_KEY_SECRET_KEY, null)
     private val customer: String?
         get() = pref?.getString(PREF_KEY_CUSTOMER, null)
-    private val shouldFetchFromCaiNiao: Boolean
-        get() {
-            val useKuaidi100 = pref?.getBoolean(PREF_KEY_DATA_SOURCE, false) ?: false
-            return if (useKuaidi100) {
-                secretKey.isNullOrBlank() || customer.isNullOrBlank()
-            } else {
-                true
-            }
-        }
+    private val dataProvider: Int
+        get() = pref?.getInt(PREF_KEY_DATA_PROVIDER, DATA_PROVIDER_NEW_KUAIDI100) ?: DATA_PROVIDER_NEW_KUAIDI100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,7 +136,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 miuiExpress!!.mailNumber,
                 it.companyCode,
                 miuiExpress!!.phoneNumber,
-                shouldFetchFromCaiNiao,
+                dataProvider,
                 secretKey!!,
                 customer!!
             )
@@ -154,7 +148,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                     viewBinding.stateLayout.showEmpty()
                     return@observe
                 }
-                viewBinding.tvSource.text = getString(R.string.data_source, response.dataSource)
+                viewBinding.tvSource.text = getString(R.string.data_provider_tips, response.dataSource)
                 viewBinding.tvStatus.text = response.status
                 viewBinding.rvTimeline.models = response.traces
                 viewBinding.stateLayout.showContent()
@@ -172,7 +166,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             miuiExpress!!.mailNumber,
             miuiExpress!!.companyCode,
             miuiExpress!!.phoneNumber,
-            shouldFetchFromCaiNiao,
+            dataProvider,
             secretKey, customer
         )
     }

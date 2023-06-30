@@ -3,6 +3,7 @@ package com.moefactory.bettermiuiexpress.model
 import com.moefactory.bettermiuiexpress.serializer.IntAsBooleanSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 @Serializable
 data class BaseKuaiDi100Response(
@@ -39,6 +40,40 @@ data class KuaiDi100RequestParam(
     @SerialName("com") val companyCode: String,
     @SerialName("num") val mailNumber: String,
     val phone: String? = null
+)
+
+@Serializable
+open class NewKuaiDi100BaseRequestParam(
+    val type: String = "detail",
+    @SerialName("appid") val appId: String = "com.Kingdee.Express",
+    val versionCode: Int = 693,
+    @SerialName("os_version") val osVersion: String = "android5.1.1",
+    @SerialName("os_name") val osName: String = "PCT-AL10",
+    @SerialName("t") val time: String = System.currentTimeMillis().toString(),
+    @SerialName("tra") val trackId: String = UUID.randomUUID().toString(),
+    @SerialName("uchannel") val userChannel: String = "null",
+    @SerialName("nt") val network: String = "wifi",
+    val deviceId: String = UUID.randomUUID().hashCode().toString(),
+    @SerialName("apiversion") val apiVersion: Int = 18,
+)
+
+@Serializable
+data class NewKuaiDi100RequestParam(
+    val phone: String? = null,
+    @SerialName("num") val mailNumber: String,
+    @SerialName("com") val companyCode: String
+) : NewKuaiDi100BaseRequestParam()
+
+@Serializable
+data class NewKuaiDi100BaseResponse(
+    val status: String? = null,
+    val lastResult: NewKuaiDi100LastResult? = null
+)
+
+@Serializable
+data class NewKuaiDi100LastResult(
+    val state: String? = null,
+    val data: List<KuaiDi100ExpressDetails>? = null
 )
 
 @Serializable

@@ -93,7 +93,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="28dp"
                 android:layout_marginTop="32dp"
-                android:text="@string/data_source"
+                android:text="@string/data_provider_tips"
                 android:textColor="@color/pa_express_detail_provider_color"
                 android:textSize="@dimen/pa_sp_13"
                 app:layout_constraintStart_toStartOf="parent"

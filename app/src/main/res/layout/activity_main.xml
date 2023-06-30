@@ -43,19 +43,43 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/sw_data_source"
+            <LinearLayout
+                android:id="@+id/ll_data_provider"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
-                android:background="@null"
                 android:layout_marginTop="12dp"
-                android:thumb="@drawable/switch_thumb"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:track="@drawable/switch_track"
-                tools:checked="true"
-                tools:text="@string/use_kuadi100" />
+                android:orientation="horizontal"
+                android:paddingVertical="12dp"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/tv_data_provider"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/data_provider"
+                    android:textColor="@color/blackTextColor"
+                    android:textSize="16sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <Spinner
+                    android:id="@+id/sp_data_provider"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:entries="@array/data_provider"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </LinearLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_key"
@@ -68,7 +92,7 @@
                 app:boxBackgroundColor="@color/miuiTextInputLayoutBackground"
                 app:boxStrokeWidth="0dp"
                 app:hintEnabled="false"
-                app:layout_constraintTop_toBottomOf="@id/sw_data_source">
+                app:layout_constraintTop_toBottomOf="@id/ll_data_provider">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/tiet_key"
@@ -103,8 +127,8 @@
                 android:id="@+id/group_kuaidi100"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                tools:visibility="visible"
-                app:constraint_referenced_ids="til_key,til_customer" />
+                app:constraint_referenced_ids="til_key,til_customer"
+                tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save"

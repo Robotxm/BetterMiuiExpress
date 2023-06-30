@@ -1,6 +1,8 @@
 package com.moefactory.bettermiuiexpress.repository
 
+import com.highcapable.yukihookapi.hook.log.loggerD
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.moefactory.bettermiuiexpress.BuildConfig
 import com.moefactory.bettermiuiexpress.api.CaiNiaoApi
 import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
 import com.moefactory.bettermiuiexpress.base.converter.CaiNiaoRequestDataConverterFactory
@@ -9,8 +11,11 @@ import com.moefactory.bettermiuiexpress.base.cookiejar.MemoryCookieJar
 import com.moefactory.bettermiuiexpress.base.interceptor.CaiNiaoRequestInterceptor
 import com.moefactory.bettermiuiexpress.base.interceptor.KuaiDi100Interceptor
 import com.moefactory.bettermiuiexpress.model.*
+import com.moefactory.bettermiuiexpress.utils.SSLUtils
+import com.moefactory.bettermiuiexpress.utils.upperMD5
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -18,6 +23,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import javax.net.ssl.X509TrustManager
 
 object ExpressActualRepository {
 
@@ -34,6 +40,14 @@ object ExpressActualRepository {
             .retryOnConnectionFailure(true)
             .addInterceptor(CaiNiaoRequestInterceptor())
             .addInterceptor(KuaiDi100Interceptor())
+            .apply {
+                if (BuildConfig.DEBUG) {
+                    sslSocketFactory(
+                        SSLUtils.sslSocketFactory,
+                        SSLUtils.unsafeTrustManagers[0] as X509TrustManager
+                    )
+                }
+            }
             .cookieJar(MemoryCookieJar())
             .build()
     }
@@ -56,8 +70,8 @@ object ExpressActualRepository {
 
     /**** KuaiDi100 Begin ****/
 
-    suspend fun queryCompanyActual(mailNumber: String, secretKey: String): List<KuaiDi100Company> {
-        val response = kuaiDi100Api.queryExpressCompany(secretKey, mailNumber)
+    suspend fun queryCompanyActual(mailNumber: String, secretKey: String?): List<KuaiDi100Company> {
+        val response = if (secretKey.isNullOrEmpty()) kuaiDi100Api.queryExpressCompanyNew(mailNumber) else kuaiDi100Api.queryExpressCompany(secretKey, mailNumber)
         when {
             // Normal
             response.startsWith("[") -> {
@@ -75,11 +89,7 @@ object ExpressActualRepository {
     }
 
     suspend fun queryExpressDetailsFromKuaiDi100Actual(
-        companyCode: String,
-        mailNumber: String,
-        phoneNumber: String?,
-        secretKey: String,
-        customer: String
+        companyCode: String, mailNumber: String, phoneNumber: String?, secretKey: String, customer: String
     ): BaseKuaiDi100Response {
         // Shunfeng and Fengwang need phone number
         val data = if (companyCode == "shunfeng" || companyCode == "fengwang") {
@@ -93,7 +103,26 @@ object ExpressActualRepository {
 
     /****  KuaiDi100 End  ****/
 
-    /****  CaiNiao Begin  ****/
+    /** New KuaiDi100 Begin **/
+    suspend fun queryExpressDetailsFromNewKuaiDi100Actual(companyCode: String, mailNumber: String, phoneNumber: String?, ): NewKuaiDi100BaseResponse {
+        // Shunfeng and Fengwang need phone number
+        val data = if (companyCode == "shunfeng" || companyCode == "fengwang") {
+            KuaiDi100RequestParam(companyCode, mailNumber, phoneNumber)
+        } else {
+            KuaiDi100RequestParam(companyCode, mailNumber)
+        }
+
+        val params = NewKuaiDi100RequestParam(phone = phoneNumber, mailNumber = mailNumber, companyCode = companyCode)
+        val paramsString = jsonParser.encodeToString(params)
+        val hash = "L0Z1yKqPXseWi4ERAUFnxQmgHwhafITG$paramsString".upperMD5()
+
+        loggerD(msg = paramsString)
+
+        return kuaiDi100Api.queryPackageNew(paramString = paramsString, hash = hash)
+    }
+    /*** New KuaiDi100 End ***/
+
+    /***** CaiNiao Begin *****/
 
     suspend fun queryExpressDetailsFromCaiNiaoActual(mailNumber: String): CaiNiaoExpressDetailsResult? {
         val tokenResponse = caiNiaoApi.getToken()
@@ -104,4 +133,6 @@ object ExpressActualRepository {
 
         return detailsResponse.data.results?.get(0)
     }
+
+    /****** CaiNiao End ******/
 }
