@@ -105,13 +105,6 @@ object ExpressActualRepository {
 
     /** New KuaiDi100 Begin **/
     suspend fun queryExpressDetailsFromNewKuaiDi100Actual(companyCode: String, mailNumber: String, phoneNumber: String?, ): NewKuaiDi100BaseResponse {
-        // Shunfeng and Fengwang need phone number
-        val data = if (companyCode == "shunfeng" || companyCode == "fengwang") {
-            KuaiDi100RequestParam(companyCode, mailNumber, phoneNumber)
-        } else {
-            KuaiDi100RequestParam(companyCode, mailNumber)
-        }
-
         val params = NewKuaiDi100RequestParam(phone = phoneNumber, mailNumber = mailNumber, companyCode = companyCode)
         val paramsString = jsonParser.encodeToString(params)
         val hash = "L0Z1yKqPXseWi4ERAUFnxQmgHwhafITG$paramsString".upperMD5()
