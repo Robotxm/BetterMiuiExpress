@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId "com.moefactory.bettermiuiexpress"
         minSdk 24
-        targetSdk 30
+        targetSdk 33
         versionCode 16
         versionName "1.5.0"
         resConfigs 'zh'
@@ -32,16 +32,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '17'
     }
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'mozilla/public-suffix-list.txt'
     }
+    namespace 'com.moefactory.bettermiuiexpress'
 }
 
 dependencies {
