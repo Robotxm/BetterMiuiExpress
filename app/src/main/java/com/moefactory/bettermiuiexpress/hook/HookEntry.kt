@@ -16,6 +16,12 @@ import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import de.robv.android.xposed.XSharedPreferences
 import kotlinx.coroutines.runBlocking
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 @InjectYukiHookWithXposed
 class HookEntry : IYukiHookXposedInit {
@@ -241,7 +247,7 @@ class HookEntry : IYukiHookXposedInit {
 
                 val response = ExpressActualRepository.queryExpressDetailsFromNewKuaiDi100Actual(convertedCompanyCode, mailNumber, phoneNumber)
 
-                return response.lastResult?.data?.map { it.toExpressTrace() }?.sortedDescending()
+                return response?.lastResult?.data?.map { it.toExpressTrace() }?.sortedDescending()
             }
             DATA_PROVIDER_LEGACY_KUAIDI100 -> {
                 val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
@@ -251,7 +257,7 @@ class HookEntry : IYukiHookXposedInit {
                     convertedCompanyCode, mailNumber, phoneNumber, secretKey!!, customer!!
                 )
 
-                return response.data?.map { it.toExpressTrace() }?.sortedDescending()
+                return response?.data?.map { it.toExpressTrace() }?.sortedDescending()
             }
             DATA_PROVIDER_CAINIAO -> {
                 return ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber)
@@ -261,6 +267,5 @@ class HookEntry : IYukiHookXposedInit {
             }
             else -> return null
         }
-
     }
 }
