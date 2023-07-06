@@ -10,7 +10,7 @@ BetterMiuiExpress 用于禁止 MIUI 负一屏快递跳转到淘宝、菜鸟等�
 
 - 基于 Android 7.0 或更高版本的 MIUI
 - 装有 MIUI 智能助理应用
-- **支持 XSharedPreferences** 的 Xposed 框架，如 LSPosed。**与采用了新 libxposed API 的 LSPosed 框架存在已知的兼容问题，请使用最新稳定版 LSPosed。**
+- **支持 XSharedPreferences** 的 Xposed 框架，如 LSPosed
 
 ## 用法
 

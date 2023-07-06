@@ -8,9 +8,9 @@ BetterMiuiExpress is an Xposed module that prevents express details to be displa
 
 ## Prerequisites
 
-- MIUI based on Android 7.0 or above.
+- MIUI based on Android 7.0 or above
 - MIUI Personal Assistant (智能助理) app installed
-- LSPosed or other Xposed-compatible frameworks **with XSharedPreferences support**. **BME has known compatible issues with LSPosed powered by new libxposed API. Please use the latest stable version of LSPosed.**
+- LSPosed or other Xposed-compatible frameworks **with XSharedPreferences support**
 
 ## Usages
 
