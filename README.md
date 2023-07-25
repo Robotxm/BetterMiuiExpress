@@ -1,47 +1,45 @@
 # BetterMiuiExpress
 
-English | [中文](README.zh-Hans.md)
+BetterMiuiExpress 用于禁止 MIUI 负一屏快递跳转到淘宝、菜鸟等第三方应用，同时使用一个自定义的界面来显示快递详情。
 
-BetterMiuiExpress is an Xposed module that prevents express details to be displayed in third-party apps such as Taobao, CaiNiao, etc. and shows a custom activity to display the details.
+**不支持淘宝的隐私手机号功能。如果顺丰快递的收件人信息使用了隐私手机号，将无法查询到快递详情。**
 
-**Privacy phone number in Taobao is not supported. If enabled, querying details of packages delivered by SF will fail.**
+## 系统要求
 
-## Prerequisites
+- 基于 Android 7.0 或更高版本的 MIUI
+- 装有 MIUI 智能助理应用
+- **支持 XSharedPreferences** 的 Xposed 框架，如 LSPosed
 
-- MIUI based on Android 7.0 or above
-- MIUI Personal Assistant (智能助理) app installed
-- LSPosed or other Xposed-compatible frameworks **with XSharedPreferences support**
+## 用法
 
-## Usages
+以下用法基于 LSPosed。
 
-The following instructions are based on LSPosed.
+- 确保已经安装 LSPosed 或其他**支持 XSharedPreferences** 的 Xposed 框架
+- 下载或自行编译模块。**如果从 1.4.6 或更低的版本升级，建议卸载旧版本后再安装**
+- 在 LSPosed 管理器中启用模块，并在作用域中勾选“智能助理”。可能需要在右上角的菜单中取消勾选“系统应用”
+- 新版快递 100 数据源不再需要 customer 和 key。如需使用旧版快递 100 数据源，仍然需要申请 API 得到 customer 和 key
+- 通过 LSPosed 管理器或系统设置强制停止“智能助理”运行
+- 在桌面上滑到负一屏，现在点击快递卡片不会再跳转到第三方应用，同时可以在卡片中看到最新的快递动态
 
-- Make sure that your device has installed LSPosed or other Xposed-compatible frameworks **with XSharedPreferences support**
-- Download this module from CoolApk or compile by yourself. **If you are updating from 1.4.6 and below to newer, it is recommended to uninstall the old version first**
-- Enable this module and check MIUI Personal Assistant as the scope. You may unchecked the System Apps option in the menu to find it
-- The new KuaiDi100 provider does not require customer and key anymore. However, if you want to retrieve express details from legacy **KuaiDi100 (without 'New' tag)**, you still need KuaiDi100 customer and key
-- Kill the MIUI Personal Assistant apps manually in LSPosed or Settings
-- Swipe to MIUI Personal Assistant in the launcher. Now clicking the express items will not lead to jumping to third-party apps, and the latest express details will be displayed in the app widget
+## 支持的数据源
 
-## Supported data provider
+- 新版快递 100
+- 快递 100: **需要 customer 和 key**
+- 菜鸟
 
-- KuaiDi100 (New)
-- KuaiDi100: **Customer and key required**
-- Cainiao
+## 需要取件码的快递
 
-## For express delivered to CaiNiao Post House
+如果有需要取件码的快递，点击快递详情页面右上角的菜单，选择“转到第三方应用”即可。
 
-You may need a code (取件码) to get your express from CaiNiao post house. Click the menu in express details activity and you will find an option to jump to third-apps manually.
+## 参与本项目
 
-## Contribution
+欢迎提交 Issue 或者 PR。**请不要提交无意义的 Issue，否则会被删除。**
 
-You can submit issues or make merge requests to contribute. **But do not submit meaningless issues, or they will be deleted.**
+## 授权协议
 
-## License
+BetterMiuiExpress 基于 GPLv3 开源，详细的协议内容在 Repository 内可以查看.
 
-BetterMiuiExpress is licensed under the GPLv3. For details, check the license in the repository.
+## 鸣谢
 
-## Acknowledgement
-
-- BetterMiuiExpress is now based on [YukiHookAPI](https://github.com/fankes/YukiHookAPI).
-- @YifePlayte for CaiNiao API usages
+- BetterMiuiExpress 现在基于 [YukiHookAPI](https://github.com/fankes/YukiHookAPI) 开发
+- @YifePlayte 对于菜鸟裹裹 API 调用的帮助
