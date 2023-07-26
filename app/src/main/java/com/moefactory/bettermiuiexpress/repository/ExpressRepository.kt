@@ -31,7 +31,10 @@ object ExpressRepository {
     /***** CaiNiao Begin *****/
 
     fun queryExpressDetailsFromCaiNiao(mailNumber: String) = NetworkBoundResource(
-        fetch = { ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber) }
+        fetch = {
+            val token = ExpressActualRepository.getCaiNiaoToken()
+            ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber, token)
+        }
     )
 
     /***** CaiNiao End *****/

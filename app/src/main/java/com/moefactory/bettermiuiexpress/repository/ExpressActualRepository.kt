@@ -148,7 +148,7 @@ object ExpressActualRepository {
 
     /***** CaiNiao Begin *****/
 
-    suspend fun queryExpressDetailsFromCaiNiaoActual(mailNumber: String) = suspendCoroutine {
+    suspend fun getCaiNiaoToken() = suspendCoroutine {
         caiNiaoApi.getToken().enqueue(object : Callback<CaiNiaoBaseResponse<PlaceholderObject>> {
             override fun onResponse(
                 call: Call<CaiNiaoBaseResponse<PlaceholderObject>>,
@@ -166,23 +166,27 @@ object ExpressActualRepository {
                 }
                 val token = tokenField.split("_")[0]
 
-                caiNiaoApi.queryExpressDetails(CaiNiaoRequestData(mailNumber), token).enqueue(object : Callback<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>> {
-                    override fun onResponse(
-                        call: Call<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>,
-                        response: Response<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>
-                    ) {
-                        val detailsResponse = response.body()
-                        val details = detailsResponse?.data?.results?.get(0)
-                        it.resume(details)
-                    }
-
-                    override fun onFailure(call: Call<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>, t: Throwable) {
-                        it.resumeWithException(t)
-                    }
-                })
+               it.resume(token)
             }
 
             override fun onFailure(call: Call<CaiNiaoBaseResponse<PlaceholderObject>>, t: Throwable) {
+                it.resumeWithException(t)
+            }
+        })
+    }
+
+    suspend fun queryExpressDetailsFromCaiNiaoActual(mailNumber: String, token: String) = suspendCoroutine {
+        caiNiaoApi.queryExpressDetails(CaiNiaoRequestData(mailNumber), token).enqueue(object : Callback<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>> {
+            override fun onResponse(
+                call: Call<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>,
+                response: Response<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>
+            ) {
+                val detailsResponse = response.body()
+                val details = detailsResponse?.data?.results?.get(0)
+                it.resume(details)
+            }
+
+            override fun onFailure(call: Call<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>, t: Throwable) {
                 it.resumeWithException(t)
             }
         })
