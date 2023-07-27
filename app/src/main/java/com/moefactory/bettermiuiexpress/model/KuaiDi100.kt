@@ -78,7 +78,6 @@ data class NewKuaiDi100LastResult(
 
 @Serializable
 data class KuaiDi100Company(
-    val lengthPre: Int,
     @SerialName("comCode") val companyCode: String,
     @SerialName("name") val companyName: String
 )
