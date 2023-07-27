@@ -260,7 +260,8 @@ class HookEntry : IYukiHookXposedInit {
                 return response?.data?.map { it.toExpressTrace() }?.sortedDescending()
             }
             DATA_PROVIDER_CAINIAO -> {
-                return ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber)
+                val token = kotlin.runCatching { ExpressActualRepository.getCaiNiaoToken() }.getOrNull() ?: return null
+                return ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber, token)
                     ?.fullTraceDetails
                     ?.map { it.toExpressTrace() }
                     ?.sortedDescending()
