@@ -60,8 +60,8 @@ dependencies {
 
     implementation 'com.github.vipulasri:timelineview:1.1.5'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2'
-    implementation 'androidx.fragment:fragment-ktx:1.6.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'androidx.fragment:fragment-ktx:1.6.1'
     implementation 'androidx.activity:activity-ktx:1.7.2'
     implementation 'com.squareup.okhttp3:okhttp:4.11.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
