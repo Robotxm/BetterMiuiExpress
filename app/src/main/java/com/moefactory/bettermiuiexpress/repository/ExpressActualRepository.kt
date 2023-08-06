@@ -132,8 +132,6 @@ object ExpressActualRepository {
         val paramsString = jsonParser.encodeToString(params)
         val hash = "L0Z1yKqPXseWi4ERAUFnxQmgHwhafITG$paramsString".upperMD5()
 
-        loggerD(msg = paramsString)
-
         kuaiDi100Api.queryPackageNew(paramString = paramsString, hash = hash).enqueue(object : Callback<NewKuaiDi100BaseResponse> {
             override fun onFailure(call: Call<NewKuaiDi100BaseResponse>, t: Throwable) {
                 it.resumeWithException(t)

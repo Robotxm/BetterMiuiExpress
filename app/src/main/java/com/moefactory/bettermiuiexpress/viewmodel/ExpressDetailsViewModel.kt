@@ -3,7 +3,6 @@ package com.moefactory.bettermiuiexpress.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_CAINIAO
 import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_LEGACY_KUAIDI100
 import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_NEW_KUAIDI100
 import com.moefactory.bettermiuiexpress.ktx.toLiveData

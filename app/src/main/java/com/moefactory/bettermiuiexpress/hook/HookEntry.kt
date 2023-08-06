@@ -137,11 +137,9 @@ class HookEntry : IYukiHookXposedInit {
                                 for (expressInfoWrapper in expressInfoList) {
                                     val companyCode = expressInfoWrapper.companyCode
                                     val mailNumber = expressInfoWrapper.orderNumber
-                                    val phoneNumber = expressInfoWrapper.phone
+                                    val phoneNumber = expressInfoWrapper.phone ?: expressInfoWrapper.sendPhone
 
-                                    val detailList = fetchExpressDetails(
-                                        mailNumber, companyCode, phoneNumber
-                                    )
+                                    val detailList = fetchExpressDetails(mailNumber, companyCode, phoneNumber)
 
                                     // Ignore invalid result
                                     if (detailList.isNullOrEmpty()) {
@@ -237,7 +235,7 @@ class HookEntry : IYukiHookXposedInit {
     }
 
     private suspend fun fetchExpressDetails(
-        mailNumber: String, originalCompanyCode: String, phoneNumber: String
+        mailNumber: String, originalCompanyCode: String, phoneNumber: String?
     ): List<ExpressTrace>? {
         when (dataProvider) {
             DATA_PROVIDER_NEW_KUAIDI100 -> {

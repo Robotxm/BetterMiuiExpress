@@ -34,8 +34,10 @@ class ExpressInfoWrapper(private val expressInfoObject: Any) {
             expressInfoClass.getMethod("setClickDisappear", BooleanPrimitiveType)
                 .invoke(expressInfoObject, value)
         }
-    val phone: String
-        get() = expressInfoClass.getMethod("getPhone").invoke(expressInfoObject) as String
+    val phone: String?
+        get() = expressInfoClass.getMethod("getPhone").invoke(expressInfoObject) as? String
+    val sendPhone: String?
+        get() = expressInfoClass.getMethod("getSendPhone").invoke(expressInfoObject) as? String
     var details: ArrayList<Any>?
         get() = expressInfoClass.getField("details")
             .get(expressInfoObject) as? ArrayList<Any>
@@ -44,6 +46,10 @@ class ExpressInfoWrapper(private val expressInfoObject: Any) {
                 .getMethod("setDetails", java.util.ArrayList::class.java)
                 .invoke(expressInfoObject, value)
         }
+
+    override fun toString(): String {
+        return expressInfoClass.getMethod("toString").invoke(expressInfoObject) as String
+    }
 }
 
 val ExpressInfoWrapper.isXiaomi: Boolean
