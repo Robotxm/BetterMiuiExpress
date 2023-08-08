@@ -17,6 +17,7 @@ import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_LEGACY_KUAIDI100
 import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_NEW_KUAIDI100
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_CUSTOMER
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DATA_PROVIDER
+import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_SECRET_KEY
 import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
@@ -51,6 +52,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
                     putString(PREF_KEY_SECRET_KEY, viewBinding.tietKey.text?.toString() ?: "")
                     putString(PREF_KEY_CUSTOMER, viewBinding.tietCustomer.text?.toString() ?: "")
                 }
+                putBoolean(PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG, viewBinding.swDoNotInterceptShunfeng.isChecked)
                 putInt(PREF_KEY_DATA_PROVIDER, dataProvider)
             }
 
@@ -75,6 +77,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
         viewBinding.spDataProvider.setSelection(
             pref.getInt(PREF_KEY_DATA_PROVIDER, DATA_PROVIDER_NEW_KUAIDI100)
         )
+
+        viewBinding.swDoNotInterceptShunfeng.isChecked = pref.getBoolean(PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG, true)
 
         viewBinding.spDataProvider.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long

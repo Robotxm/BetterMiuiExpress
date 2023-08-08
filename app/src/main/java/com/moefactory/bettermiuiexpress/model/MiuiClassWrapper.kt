@@ -1,8 +1,10 @@
 package com.moefactory.bettermiuiexpress.model
 
 import android.os.Parcelable
+import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG
 import com.moefactory.bettermiuiexpress.ktx.BooleanPrimitiveType
 import com.moefactory.bettermiuiexpress.ktx.JavaStringClass
+import de.robv.android.xposed.XSharedPreferences
 import kotlinx.parcelize.Parcelize
 
 fun Any.toExpressInfoWrapper() = ExpressInfoWrapper(this)
@@ -97,8 +99,11 @@ val ExpressEntryWrapper.isShunfeng: Boolean
     get() = provider == "ShunFeng"
 val ExpressEntryWrapper.isJiTu: Boolean
     get() = provider == "JiTu"
-val ExpressEntryWrapper.shouldUseNativeUI: Boolean
-    get() = isXiaomi || isJingDong || isShunfeng || isJiTu
+
+fun ExpressEntryWrapper.shouldUseNativeUI(pref: XSharedPreferences?): Boolean {
+    return isXiaomi || isJingDong || isJiTu
+            || isShunfeng && pref?.getBoolean(PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG, true) == true
+}
 
 class ExpressInfoDetailWrapper(private val expressInfoDetailObject: Any) {
 

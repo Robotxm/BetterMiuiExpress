@@ -4,6 +4,7 @@ const val PREF_NAME = "better_miui_express"
 const val PREF_KEY_SECRET_KEY = "secretKey"
 const val PREF_KEY_CUSTOMER = "customer"
 const val PREF_KEY_DATA_PROVIDER = "dataProvider"
+const val PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG = "doNotInterceptShunFeng"
 
 const val BME_MAIN_ACTIVITY_ALIAS = "com.moefactory.bettermiuiexpress.activity.MainActivityAlias"
 

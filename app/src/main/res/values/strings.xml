@@ -29,4 +29,5 @@
     <string name="new_kuaidi100">新版快递 100</string>
     <string name="cainiao">菜鸟裹裹</string>
     <string name="kuaidi100_fields_required">请输入快递 100 查询 API 的 customer 和 key</string>
+    <string name="do_not_intercept_shunfeng">顺丰速运使用系统快应用</string>
 </resources>
