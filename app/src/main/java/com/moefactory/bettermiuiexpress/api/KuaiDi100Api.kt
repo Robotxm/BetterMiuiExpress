@@ -1,39 +1,37 @@
 package com.moefactory.bettermiuiexpress.api
 
-import com.moefactory.bettermiuiexpress.model.BaseKuaiDi100Response
-import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
-import com.moefactory.bettermiuiexpress.model.NewKuaiDi100BaseResponse
+import com.moefactory.bettermiuiexpress.model.KuaiDi100BaseResponse
+import com.moefactory.bettermiuiexpress.model.Kuaidi100ExpressDetailsResult
 import retrofit2.Call
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface KuaiDi100Api {
 
-    @POST("https://poll.kuaidi100.com/poll/query.do")
+    @POST("https://p.kuaidi100.com/mobile/mobileapi.do")
     @FormUrlEncoded
-    fun queryPackage(
-        @Field("param") param: KuaiDi100RequestParam,
-        @Field("customer") customer: String,
-        @Field("key") secretKey: String // This field will be removed after calculating sign
-    ): Call<BaseKuaiDi100Response>
-
-    @POST("https://p.kuaidi100.com/mobile/mobileapi.do?method=query")
-    @Headers("User-Agent: Dalvik/2.1.0 (Linux; U; Android 15; 2304FPN6DC Build/AQ3A.240912.001)")
-    @FormUrlEncoded
-    fun queryPackageNew(
-        @Field("method") method: String = "query",
+    fun registerDeviceTrackId(
+        @Field("method") method: String,
         @Field("json") paramString: String,
         @Field("token") token: String = "",
         @Field("hash") hash: String,
         @Field("userid") userId: Int = 0
-    ): Call<NewKuaiDi100BaseResponse>
+    ): Call<KuaiDi100BaseResponse<String>>
+
+    @POST("https://p.kuaidi100.com/mobile/mobileapi.do?method=query")
+    @FormUrlEncoded
+    fun queryExpressDetails(
+        @Field("method") method: String,
+        @Field("json") paramString: String,
+        @Field("token") token: String = "",
+        @Field("hash") hash: String,
+        @Field("userid") userId: Int = 0
+    ): Call<KuaiDi100BaseResponse<Kuaidi100ExpressDetailsResult>>
 
     @GET("https://www.kuaidi100.com/autonumber/auto")
-    @Headers("User-Agent: Dalvik/2.1.0 (Linux; U; Android 15; 2304FPN6DC Build/AQ3A.240912.001)")
     fun queryExpressCompany(
         @Query("num") mailNumber: String
     ): Call<String>

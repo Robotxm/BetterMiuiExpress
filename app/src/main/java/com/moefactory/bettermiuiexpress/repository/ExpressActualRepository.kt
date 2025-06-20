@@ -3,12 +3,13 @@ package com.moefactory.bettermiuiexpress.repository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.moefactory.bettermiuiexpress.BuildConfig
 import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
-import com.moefactory.bettermiuiexpress.base.converter.KuaiDi100RequestDataConverterFactory
 import com.moefactory.bettermiuiexpress.base.cookiejar.MemoryCookieJar
 import com.moefactory.bettermiuiexpress.base.interceptor.KuaiDi100Interceptor
+import com.moefactory.bettermiuiexpress.model.KuaiDi100BaseResponse
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
-import com.moefactory.bettermiuiexpress.model.NewKuaiDi100BaseResponse
-import com.moefactory.bettermiuiexpress.model.NewKuaiDi100RequestParam
+import com.moefactory.bettermiuiexpress.model.KuaiDi100ExpressDetailsRequestParam
+import com.moefactory.bettermiuiexpress.model.KuaiDi100ExpressRegisterDeviceTrackIdRequestParam
+import com.moefactory.bettermiuiexpress.model.Kuaidi100ExpressDetailsResult
 import com.moefactory.bettermiuiexpress.utils.SSLUtils
 import com.moefactory.bettermiuiexpress.utils.upperMD5
 import kotlinx.serialization.json.Json
@@ -57,14 +58,38 @@ object ExpressActualRepository {
             .baseUrl("https://poll.kuaidi100.com/")
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(jsonParser.asConverterFactory("application/json".toMediaType()))
-            .addConverterFactory(KuaiDi100RequestDataConverterFactory.create())
             .client(okHttpClient)
             .build()
     }
 
     private val kuaiDi100Api by lazy { retrofit.create(KuaiDi100Api::class.java) }
 
-    /**** KuaiDi100 Begin ****/
+    suspend fun registerDeviceTrackIdActual(trackId: String) = suspendCoroutine {
+        val params = KuaiDi100ExpressRegisterDeviceTrackIdRequestParam(trackId = trackId)
+        val paramsString = jsonParser.encodeToString(params)
+
+        kuaiDi100Api.registerDeviceTrackId(
+            method = "pushbind2",
+            paramString = paramsString,
+            userId = 0,
+            token = "",
+            hash = "X5GqUj8Dc0mWl3eK6V2h78Z9sP1r4n$paramsString".upperMD5()
+        ).enqueue(object : Callback<KuaiDi100BaseResponse<String>>{
+            override fun onResponse(call: Call<KuaiDi100BaseResponse<String>>, response: Response<KuaiDi100BaseResponse<String>>) {
+                val body = response.body()
+
+                if (body?.status == "200") {
+                    it.resume(true)
+                } else {
+                    it.resumeWithException(Exception("Failed to register"))
+                }
+            }
+
+            override fun onFailure(call: Call<KuaiDi100BaseResponse<String>>, t: Throwable) {
+                it.resumeWithException(t)
+            }
+        })
+    }
 
     suspend fun queryCompanyActual(mailNumber: String) = suspendCoroutine<List<KuaiDi100Company>> {
         kuaiDi100Api.queryExpressCompany(mailNumber).enqueue(object : Callback<String> {
@@ -92,23 +117,24 @@ object ExpressActualRepository {
         })
     }
 
-    /****  KuaiDi100 End  ****/
-
-    /** New KuaiDi100 Begin **/
-    suspend fun queryExpressDetailsFromKuaiDi100Actual(companyCode: String, mailNumber: String, phoneNumber: String?) = suspendCoroutine {
-        val params = NewKuaiDi100RequestParam(phone = phoneNumber, mailNumber = mailNumber, companyCode = companyCode)
+    suspend fun queryExpressDetailsFromKuaiDi100Actual(companyCode: String, mailNumber: String, phoneNumber: String?, trackId: String) = suspendCoroutine {
+        val params = KuaiDi100ExpressDetailsRequestParam(phone = phoneNumber, mailNumber = mailNumber, companyCode = companyCode, trackId = trackId)
         val paramsString = jsonParser.encodeToString(params)
-        val hash = "X5GqUj8Dc0mWl3eK6V2h78Z9sP1r4n$paramsString".upperMD5()
 
-        kuaiDi100Api.queryPackageNew(paramString = paramsString, hash = hash).enqueue(object : Callback<NewKuaiDi100BaseResponse> {
-            override fun onFailure(call: Call<NewKuaiDi100BaseResponse>, t: Throwable) {
+        kuaiDi100Api.queryExpressDetails(
+            method = "query",
+            paramString = paramsString,
+            userId = 0,
+            token = "",
+            hash = "X5GqUj8Dc0mWl3eK6V2h78Z9sP1r4n$paramsString".upperMD5()
+        ).enqueue(object : Callback<KuaiDi100BaseResponse<Kuaidi100ExpressDetailsResult>> {
+            override fun onFailure(call: Call<KuaiDi100BaseResponse<Kuaidi100ExpressDetailsResult>>, t: Throwable) {
                 it.resumeWithException(t)
             }
 
-            override fun onResponse(call: Call<NewKuaiDi100BaseResponse>, response: Response<NewKuaiDi100BaseResponse>) {
+            override fun onResponse(call: Call<KuaiDi100BaseResponse<Kuaidi100ExpressDetailsResult>>, response: Response<KuaiDi100BaseResponse<Kuaidi100ExpressDetailsResult>>) {
                 it.resume(response.body())
             }
         })
     }
-    /*** New KuaiDi100 End ***/
 }

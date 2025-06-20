@@ -1,28 +1,52 @@
 package com.moefactory.bettermiuiexpress.model
 
-import com.moefactory.bettermiuiexpress.serializer.IntAsBooleanSerializer
+import android.util.Base64
+import com.moefactory.bettermiuiexpress.ktx.toByteArray
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
 @Serializable
-data class BaseKuaiDi100Response(
-    /* Common fields */
-    val message: String,
+open class KuaiDi100BaseRequestParam(
+    @SerialName("appid") val appId: String = "com.Kingdee.Express",
+    val versionCode: Int = 852,
+    @SerialName("os_version") val osVersion: String = "android15",
+    @SerialName("os_name") val osName: String = "2304FPN6DC",
+    @SerialName("t") val time: String = System.currentTimeMillis().toString(),
+    @SerialName("tra") open val trackId: String,
+    @SerialName("uchannel") val userChannel: String = "null",
+    @SerialName("nt") val networkType: String = "wifi",
+    @SerialName("apiversion") val apiVersion: Int = 31,
+    val deviceId: String = UUID.randomUUID().toString().let { it.substring(0..(it.length / 2)) },
+)
 
-    /* Normal response fields */
-    val state: Int? = null,
-    val status: Int? = null,
-    val condition: String? = null,
-    @SerialName("ischeck")
-    @Serializable(with = IntAsBooleanSerializer::class) val isReceived: Boolean? = null,
-    @SerialName("com") val companyCode: String? = null,
-    @SerialName("nu") val mailNumber: String? = null,
-    val data: List<KuaiDi100ExpressDetails>? = null,
+@Serializable
+data class KuaiDi100ExpressDetailsRequestParam(
+    @SerialName("num") val mailNumber: String,
+    @SerialName("com") val companyCode: String,
+    override val trackId: String,
+    val type: String = "detail",
+    val phone: String? = null,
+) : KuaiDi100BaseRequestParam(trackId = trackId)
 
-    /* Unexpected response fields */
-    val result: Boolean? = null,
-    val returnCode: String? = null
+@Serializable
+data class KuaiDi100ExpressRegisterDeviceTrackIdRequestParam(
+    @SerialName("device_token") val deviceToken: String = Base64.encodeToString(UUID.randomUUID().toByteArray(), Base64.NO_WRAP),
+    @SerialName("third_type") val thirdType: String = "XIAOMI",
+    val isOpenNotice: Int = 2,
+    override val trackId: String,
+) : KuaiDi100BaseRequestParam(trackId = trackId)
+
+@Serializable
+data class KuaiDi100BaseResponse<T>(
+    val status: String? = null,
+    val lastResult: T? = null
+)
+
+@Serializable
+data class Kuaidi100ExpressDetailsResult(
+    val state: String? = null,
+    val data: List<KuaiDi100ExpressDetails>? = null
 )
 
 @Serializable
@@ -33,47 +57,6 @@ data class KuaiDi100ExpressDetails(
     val status: String? = null,
     val areaCode: String? = null,
     val areaName: String? = null
-)
-
-@Serializable
-data class KuaiDi100RequestParam(
-    @SerialName("com") val companyCode: String,
-    @SerialName("num") val mailNumber: String,
-    val phone: String? = null
-)
-
-@Serializable
-open class NewKuaiDi100BaseRequestParam(
-    val type: String = "detail",
-    @SerialName("appid") val appId: String = "com.Kingdee.Express",
-    val versionCode: Int = 852,
-    @SerialName("os_version") val osVersion: String = "android15",
-    @SerialName("os_name") val osName: String = "2304FPN6DC",
-    @SerialName("t") val time: String = System.currentTimeMillis().toString(),
-    @SerialName("tra") val trackId: String = UUID.randomUUID().toString(),
-    @SerialName("uchannel") val userChannel: String = "null",
-    @SerialName("nt") val network: String = "wifi",
-    val deviceId: String = UUID.randomUUID().hashCode().toString(),
-    @SerialName("apiversion") val apiVersion: Int = 31,
-)
-
-@Serializable
-data class NewKuaiDi100RequestParam(
-    val phone: String? = null,
-    @SerialName("num") val mailNumber: String,
-    @SerialName("com") val companyCode: String
-) : NewKuaiDi100BaseRequestParam()
-
-@Serializable
-data class NewKuaiDi100BaseResponse(
-    val status: String? = null,
-    val lastResult: NewKuaiDi100LastResult? = null
-)
-
-@Serializable
-data class NewKuaiDi100LastResult(
-    val state: String? = null,
-    val data: List<KuaiDi100ExpressDetails>? = null
 )
 
 @Serializable

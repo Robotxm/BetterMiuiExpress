@@ -8,9 +8,9 @@ object ExpressRepository {
         fetch = { ExpressActualRepository.queryCompanyActual(mailNumber) }
     )
 
-    fun queryExpressDetailsFromKuaiDi100(companyCode: String, mailNumber: String, phoneNumber: String?) = NetworkBoundResource(
+    fun queryExpressDetailsFromKuaiDi100(companyCode: String, mailNumber: String, phoneNumber: String?, trackId: String) = NetworkBoundResource(
         fetch = {
-            ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(companyCode, mailNumber, phoneNumber)
+            ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(companyCode, mailNumber, phoneNumber, trackId)
         }
     )
 }

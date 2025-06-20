@@ -28,6 +28,7 @@ import com.drake.brv.utils.models
 import com.drake.brv.utils.setup
 import com.github.vipulasri.timelineview.TimelineView
 import com.moefactory.bettermiuiexpress.R
+import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
 import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
@@ -75,6 +76,8 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     private val viewModel by viewModels<ExpressDetailsViewModel>()
 
     private val pref by lazy { getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE) }
+    private val deviceTrackId: String?
+        get() = pref?.getString(PREF_KEY_DEVICE_TRACK_ID, null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,6 +129,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 miuiExpress!!.mailNumber,
                 it.companyCode,
                 miuiExpress!!.phoneNumber,
+                deviceTrackId
             )
         }
         viewModel.expressDetails.observe(this) {
@@ -153,6 +157,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             miuiExpress!!.mailNumber,
             miuiExpress!!.companyCode,
             miuiExpress!!.phoneNumber,
+            deviceTrackId
         )
     }
 

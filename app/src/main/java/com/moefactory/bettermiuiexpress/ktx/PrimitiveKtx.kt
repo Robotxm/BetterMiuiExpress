@@ -2,23 +2,32 @@ package com.moefactory.bettermiuiexpress.ktx
 
 import android.content.res.Resources
 import android.util.TypedValue
+import java.nio.ByteBuffer
+import java.util.UUID
+import kotlin.math.roundToInt
 
-val Float.dp
+
+val <T: Number> T.dpFloat
     get() = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,
-        this,
+        this.toFloat(),
         Resources.getSystem().displayMetrics
-    ).toInt()
+    )
 
-val Int.dp
-    get() = toFloat().dp
+val <T: Number> T.dp
+    get() = dpFloat.roundToInt()
 
-val Float.sp
+val <T: Number> T.spFloat
     get() = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_SP,
-        this,
+        this.toFloat(),
         Resources.getSystem().displayMetrics
-    ).toInt()
+    )
 
-val Int.sp
-    get() = toFloat().sp
+val <T: Number> T.sp
+    get() = spFloat.roundToInt()
+
+fun UUID.toByteArray(): ByteArray = ByteBuffer.wrap(ByteArray(16))
+    .putLong(mostSignificantBits)
+    .putLong(leastSignificantBits)
+    .array()

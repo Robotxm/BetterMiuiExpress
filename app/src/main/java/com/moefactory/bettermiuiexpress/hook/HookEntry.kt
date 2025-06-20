@@ -1,6 +1,7 @@
 package com.moefactory.bettermiuiexpress.hook
 
 import android.content.Context
+import androidx.core.content.edit
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.factory.configs
 import com.highcapable.yukihookapi.hook.factory.encase
@@ -16,6 +17,7 @@ import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import de.robv.android.xposed.XSharedPreferences
 import kotlinx.coroutines.runBlocking
+import java.util.UUID
 
 @InjectYukiHookWithXposed
 class HookEntry : IYukiHookXposedInit {
@@ -24,6 +26,8 @@ class HookEntry : IYukiHookXposedInit {
         val p = XSharedPreferences(BuildConfig.APPLICATION_ID, PREF_NAME)
         if (p.file.canRead()) p else null
     }
+    private val deviceTrackId: String?
+        get() = pref?.getString(PREF_KEY_DEVICE_TRACK_ID, null)
 
     override fun onInit() = configs {
         isDebug = BuildConfig.DEBUG
@@ -38,9 +42,7 @@ class HookEntry : IYukiHookXposedInit {
             // public static void route(Context context, Object obj, ExpressEntry expressEntry)
             findClass(PA_EXPRESS_ROUTER)
                 .hook {
-                    val expressEntryClass =
-                        PA_EXPRESS_ENTRY.toClassOrNull() ?: PA_EXPRESS_ENTRY_OLD.toClassOrNull()
-                        ?: return@loadApp
+                    val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return@loadApp
                     injectMember {
                         method {
                             name = "route"
@@ -66,11 +68,9 @@ class HookEntry : IYukiHookXposedInit {
             // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2)
             // New version
             // public static String gotoExpressDetailPage(Context context, View view, ExpressEntry expressEntry, boolean z, boolean z2, Intent intent, int i2)
-            findClass(PA_EXPRESS_INTENT_UTILS, PA_EXPRESS_INTENT_UTILS_OLD)
+            findClass(PA_EXPRESS_INTENT_UTILS)
                 .hook {
-                    val expressEntryClass =
-                        PA_EXPRESS_ENTRY.toClassOrNull() ?: PA_EXPRESS_ENTRY_OLD.toClassOrNull()
-                        ?: return@loadApp
+                    val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return@loadApp
                     injectMember {
                         var isNewVersion = false
 
@@ -108,7 +108,7 @@ class HookEntry : IYukiHookXposedInit {
 
             // Hook ExpressRepository$saveExpress
             // Save the latest detail
-            findClass(PA_EXPRESS_REPOSITOIRY, PA_EXPRESS_REPOSITORY_OLD)
+            findClass(PA_EXPRESS_REPOSITOIRY)
                 .hook {
                     injectMember {
                         method {
@@ -134,10 +134,7 @@ class HookEntry : IYukiHookXposedInit {
                                     }
 
                                     // Save latest trace
-                                    val detailClass =
-                                        PA_EXPRESS_INFO_DETAIL.toClassOrNull()
-                                            ?: PA_EXPRESS_INFO_DETAIL_OLD.toClassOrNull()
-                                            ?: return@runBlocking
+                                    val detailClass = PA_EXPRESS_INFO_DETAIL.toClassOrNull() ?: return@runBlocking
                                     saveLatestExpressTrace(
                                         expressInfoWrapper,
                                         detailClass,
@@ -227,7 +224,18 @@ class HookEntry : IYukiHookXposedInit {
         val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
             ?: ExpressActualRepository.queryCompanyActual(mailNumber).firstOrNull()?.companyCode
 
-        val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(convertedCompanyCode!!, mailNumber, phoneNumber)
+        val deviceTrackId = deviceTrackId
+        val response = if (deviceTrackId.isNullOrEmpty()) {
+            val generatedTrackId = UUID.randomUUID().toString()
+            ExpressActualRepository.registerDeviceTrackIdActual(generatedTrackId)
+            pref?.edit {
+                putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId)
+            }
+
+            ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(convertedCompanyCode!!, mailNumber, phoneNumber, generatedTrackId)
+        } else {
+            ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(convertedCompanyCode!!, mailNumber, phoneNumber, deviceTrackId)
+        }
 
         return response?.lastResult?.data?.map { it.toExpressTrace() }?.sortedDescending()
     }
