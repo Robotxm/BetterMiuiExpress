@@ -28,10 +28,6 @@ import com.drake.brv.utils.models
 import com.drake.brv.utils.setup
 import com.github.vipulasri.timelineview.TimelineView
 import com.moefactory.bettermiuiexpress.R
-import com.moefactory.bettermiuiexpress.base.app.DATA_PROVIDER_NEW_KUAIDI100
-import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_CUSTOMER
-import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DATA_PROVIDER
-import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_SECRET_KEY
 import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
@@ -79,12 +75,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     private val viewModel by viewModels<ExpressDetailsViewModel>()
 
     private val pref by lazy { getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE) }
-    private val secretKey: String?
-        get() = pref?.getString(PREF_KEY_SECRET_KEY, null)
-    private val customer: String?
-        get() = pref?.getString(PREF_KEY_CUSTOMER, null)
-    private val dataProvider: Int
-        get() = pref?.getInt(PREF_KEY_DATA_PROVIDER, DATA_PROVIDER_NEW_KUAIDI100) ?: DATA_PROVIDER_NEW_KUAIDI100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -136,9 +126,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 miuiExpress!!.mailNumber,
                 it.companyCode,
                 miuiExpress!!.phoneNumber,
-                dataProvider,
-                secretKey!!,
-                customer!!
             )
         }
         viewModel.expressDetails.observe(this) {
@@ -166,8 +153,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             miuiExpress!!.mailNumber,
             miuiExpress!!.companyCode,
             miuiExpress!!.phoneNumber,
-            dataProvider,
-            secretKey, customer
         )
     }
 

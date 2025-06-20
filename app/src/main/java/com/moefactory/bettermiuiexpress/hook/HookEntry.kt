@@ -16,12 +16,6 @@ import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import de.robv.android.xposed.XSharedPreferences
 import kotlinx.coroutines.runBlocking
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 @InjectYukiHookWithXposed
 class HookEntry : IYukiHookXposedInit {
@@ -30,13 +24,6 @@ class HookEntry : IYukiHookXposedInit {
         val p = XSharedPreferences(BuildConfig.APPLICATION_ID, PREF_NAME)
         if (p.file.canRead()) p else null
     }
-
-    private val secretKey: String?
-        get() = pref?.getString(PREF_KEY_SECRET_KEY, null)
-    private val customer: String?
-        get() = pref?.getString(PREF_KEY_CUSTOMER, null)
-    private val dataProvider: Int
-        get() = pref?.getInt(PREF_KEY_DATA_PROVIDER, DATA_PROVIDER_NEW_KUAIDI100) ?: DATA_PROVIDER_NEW_KUAIDI100
 
     override fun onInit() = configs {
         isDebug = BuildConfig.DEBUG
@@ -237,34 +224,11 @@ class HookEntry : IYukiHookXposedInit {
     private suspend fun fetchExpressDetails(
         mailNumber: String, originalCompanyCode: String, phoneNumber: String?
     ): List<ExpressTrace>? {
-        when (dataProvider) {
-            DATA_PROVIDER_NEW_KUAIDI100 -> {
-                // Get the company code
-                val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
-                    ?: ExpressActualRepository.queryCompanyActual(mailNumber, secretKey)[0].companyCode
+        val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
+            ?: ExpressActualRepository.queryCompanyActual(mailNumber).firstOrNull()?.companyCode
 
-                val response = ExpressActualRepository.queryExpressDetailsFromNewKuaiDi100Actual(convertedCompanyCode, mailNumber, phoneNumber)
+        val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(convertedCompanyCode!!, mailNumber, phoneNumber)
 
-                return response?.lastResult?.data?.map { it.toExpressTrace() }?.sortedDescending()
-            }
-            DATA_PROVIDER_LEGACY_KUAIDI100 -> {
-                val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
-                    ?: ExpressActualRepository.queryCompanyActual(mailNumber, secretKey)[0].companyCode
-
-                val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(
-                    convertedCompanyCode, mailNumber, phoneNumber, secretKey!!, customer!!
-                )
-
-                return response?.data?.map { it.toExpressTrace() }?.sortedDescending()
-            }
-            DATA_PROVIDER_CAINIAO -> {
-                val token = kotlin.runCatching { ExpressActualRepository.getCaiNiaoToken() }.getOrNull() ?: return null
-                return ExpressActualRepository.queryExpressDetailsFromCaiNiaoActual(mailNumber, token)
-                    ?.fullTraceDetails
-                    ?.map { it.toExpressTrace() }
-                    ?.sortedDescending()
-            }
-            else -> return null
-        }
+        return response?.lastResult?.data?.map { it.toExpressTrace() }?.sortedDescending()
     }
 }

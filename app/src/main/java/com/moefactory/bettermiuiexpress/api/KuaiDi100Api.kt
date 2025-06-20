@@ -3,7 +3,6 @@ package com.moefactory.bettermiuiexpress.api
 import com.moefactory.bettermiuiexpress.model.BaseKuaiDi100Response
 import com.moefactory.bettermiuiexpress.model.KuaiDi100RequestParam
 import com.moefactory.bettermiuiexpress.model.NewKuaiDi100BaseResponse
-import com.moefactory.bettermiuiexpress.model.NewKuaiDi100RequestParam
 import retrofit2.Call
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -22,15 +21,8 @@ interface KuaiDi100Api {
         @Field("key") secretKey: String // This field will be removed after calculating sign
     ): Call<BaseKuaiDi100Response>
 
-    @POST("https://www.kuaidi100.com/autonumber/auto")
-    @FormUrlEncoded
-    fun queryExpressCompany(
-        @Field("key") secretKey: String,
-        @Field("num") mailNumber: String
-    ): Call<String>
-
     @POST("https://p.kuaidi100.com/mobile/mobileapi.do?method=query")
-    @Headers("User-Agent: Dalvik/2.1.0 (Linux; U; Android 5.1.1; PCT-AL10 Build/LYZ28N)")
+    @Headers("User-Agent: Dalvik/2.1.0 (Linux; U; Android 15; 2304FPN6DC Build/AQ3A.240912.001)")
     @FormUrlEncoded
     fun queryPackageNew(
         @Field("method") method: String = "query",
@@ -41,8 +33,8 @@ interface KuaiDi100Api {
     ): Call<NewKuaiDi100BaseResponse>
 
     @GET("https://www.kuaidi100.com/autonumber/auto")
-    @Headers("User-Agent: Dalvik/2.1.0 (Linux; U; Android 5.1.1; PCT-AL10 Build/LYZ28N)")
-    fun queryExpressCompanyNew(
+    @Headers("User-Agent: Dalvik/2.1.0 (Linux; U; Android 15; 2304FPN6DC Build/AQ3A.240912.001)")
+    fun queryExpressCompany(
         @Query("num") mailNumber: String
     ): Call<String>
 }

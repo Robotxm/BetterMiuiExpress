@@ -46,15 +46,15 @@ data class KuaiDi100RequestParam(
 open class NewKuaiDi100BaseRequestParam(
     val type: String = "detail",
     @SerialName("appid") val appId: String = "com.Kingdee.Express",
-    val versionCode: Int = 693,
-    @SerialName("os_version") val osVersion: String = "android5.1.1",
-    @SerialName("os_name") val osName: String = "PCT-AL10",
+    val versionCode: Int = 852,
+    @SerialName("os_version") val osVersion: String = "android15",
+    @SerialName("os_name") val osName: String = "2304FPN6DC",
     @SerialName("t") val time: String = System.currentTimeMillis().toString(),
     @SerialName("tra") val trackId: String = UUID.randomUUID().toString(),
     @SerialName("uchannel") val userChannel: String = "null",
     @SerialName("nt") val network: String = "wifi",
     val deviceId: String = UUID.randomUUID().hashCode().toString(),
-    @SerialName("apiversion") val apiVersion: Int = 18,
+    @SerialName("apiversion") val apiVersion: Int = 31,
 )
 
 @Serializable

@@ -1,21 +1,16 @@
 package com.moefactory.bettermiuiexpress.repository
 
-import com.highcapable.yukihookapi.hook.log.loggerD
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.moefactory.bettermiuiexpress.BuildConfig
-import com.moefactory.bettermiuiexpress.api.CaiNiaoApi
 import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
-import com.moefactory.bettermiuiexpress.base.converter.CaiNiaoRequestDataConverterFactory
 import com.moefactory.bettermiuiexpress.base.converter.KuaiDi100RequestDataConverterFactory
 import com.moefactory.bettermiuiexpress.base.cookiejar.MemoryCookieJar
-import com.moefactory.bettermiuiexpress.base.interceptor.CaiNiaoRequestInterceptor
 import com.moefactory.bettermiuiexpress.base.interceptor.KuaiDi100Interceptor
-import com.moefactory.bettermiuiexpress.model.*
+import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
+import com.moefactory.bettermiuiexpress.model.NewKuaiDi100BaseResponse
+import com.moefactory.bettermiuiexpress.model.NewKuaiDi100RequestParam
 import com.moefactory.bettermiuiexpress.utils.SSLUtils
 import com.moefactory.bettermiuiexpress.utils.upperMD5
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -44,7 +39,6 @@ object ExpressActualRepository {
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
             .retryOnConnectionFailure(true)
-            .addInterceptor(CaiNiaoRequestInterceptor())
             .addInterceptor(KuaiDi100Interceptor())
             .apply {
                 if (BuildConfig.DEBUG) {
@@ -58,13 +52,11 @@ object ExpressActualRepository {
             .build()
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://poll.kuaidi100.com/")
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(jsonParser.asConverterFactory("application/json".toMediaType()))
-            .addConverterFactory(CaiNiaoRequestDataConverterFactory.create())
             .addConverterFactory(KuaiDi100RequestDataConverterFactory.create())
             .client(okHttpClient)
             .build()
@@ -72,13 +64,10 @@ object ExpressActualRepository {
 
     private val kuaiDi100Api by lazy { retrofit.create(KuaiDi100Api::class.java) }
 
-    private val caiNiaoApi by lazy { retrofit.create(CaiNiaoApi::class.java) }
-
     /**** KuaiDi100 Begin ****/
 
-    suspend fun queryCompanyActual(mailNumber: String, secretKey: String?) = suspendCoroutine<List<KuaiDi100Company>> {
-        val call = if (secretKey.isNullOrEmpty()) kuaiDi100Api.queryExpressCompanyNew(mailNumber) else kuaiDi100Api.queryExpressCompany(secretKey, mailNumber)
-        call.enqueue(object : Callback<String> {
+    suspend fun queryCompanyActual(mailNumber: String) = suspendCoroutine<List<KuaiDi100Company>> {
+        kuaiDi100Api.queryExpressCompany(mailNumber).enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>, response: Response<String>) {
                 val body = response.body()
                 when {
@@ -103,34 +92,13 @@ object ExpressActualRepository {
         })
     }
 
-    suspend fun queryExpressDetailsFromKuaiDi100Actual(
-        companyCode: String, mailNumber: String, phoneNumber: String?, secretKey: String, customer: String
-    ) = suspendCoroutine {
-        // Shunfeng and Fengwang need phone number
-        val data = if (companyCode == "shunfeng" || companyCode == "fengwang") {
-            KuaiDi100RequestParam(companyCode, mailNumber, phoneNumber)
-        } else {
-            KuaiDi100RequestParam(companyCode, mailNumber)
-        }
-
-        kuaiDi100Api.queryPackage(data, customer, secretKey).enqueue(object : Callback<BaseKuaiDi100Response> {
-            override fun onFailure(call: Call<BaseKuaiDi100Response>, t: Throwable) {
-                it.resumeWithException(t)
-            }
-
-            override fun onResponse(call: Call<BaseKuaiDi100Response>, response: Response<BaseKuaiDi100Response>) {
-                it.resume(response.body())
-            }
-        })
-    }
-
     /****  KuaiDi100 End  ****/
 
     /** New KuaiDi100 Begin **/
-    suspend fun queryExpressDetailsFromNewKuaiDi100Actual(companyCode: String, mailNumber: String, phoneNumber: String?) = suspendCoroutine {
+    suspend fun queryExpressDetailsFromKuaiDi100Actual(companyCode: String, mailNumber: String, phoneNumber: String?) = suspendCoroutine {
         val params = NewKuaiDi100RequestParam(phone = phoneNumber, mailNumber = mailNumber, companyCode = companyCode)
         val paramsString = jsonParser.encodeToString(params)
-        val hash = "L0Z1yKqPXseWi4ERAUFnxQmgHwhafITG$paramsString".upperMD5()
+        val hash = "X5GqUj8Dc0mWl3eK6V2h78Z9sP1r4n$paramsString".upperMD5()
 
         kuaiDi100Api.queryPackageNew(paramString = paramsString, hash = hash).enqueue(object : Callback<NewKuaiDi100BaseResponse> {
             override fun onFailure(call: Call<NewKuaiDi100BaseResponse>, t: Throwable) {
@@ -143,52 +111,4 @@ object ExpressActualRepository {
         })
     }
     /*** New KuaiDi100 End ***/
-
-    /***** CaiNiao Begin *****/
-
-    suspend fun getCaiNiaoToken() = suspendCoroutine {
-        caiNiaoApi.getToken().enqueue(object : Callback<CaiNiaoBaseResponse<PlaceholderObject>> {
-            override fun onResponse(
-                call: Call<CaiNiaoBaseResponse<PlaceholderObject>>,
-                response: Response<CaiNiaoBaseResponse<PlaceholderObject>>
-            ) {
-                val tokenResponse = response.body()
-                if (tokenResponse == null) {
-                    it.resumeWithException(IllegalArgumentException("Missing token response"))
-                    return
-                }
-                val tokenField = tokenResponse.token
-                if (tokenField == null) {
-                    it.resumeWithException(IllegalArgumentException("Missing token in response"))
-                    return
-                }
-                val token = tokenField.split("_")[0]
-
-               it.resume(token)
-            }
-
-            override fun onFailure(call: Call<CaiNiaoBaseResponse<PlaceholderObject>>, t: Throwable) {
-                it.resumeWithException(t)
-            }
-        })
-    }
-
-    suspend fun queryExpressDetailsFromCaiNiaoActual(mailNumber: String, token: String) = suspendCoroutine {
-        caiNiaoApi.queryExpressDetails(CaiNiaoRequestData(mailNumber), token).enqueue(object : Callback<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>> {
-            override fun onResponse(
-                call: Call<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>,
-                response: Response<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>
-            ) {
-                val detailsResponse = response.body()
-                val details = detailsResponse?.data?.results?.get(0)
-                it.resume(details)
-            }
-
-            override fun onFailure(call: Call<CaiNiaoBaseResponse<CaiNiaoExpressDetailsResponse>>, t: Throwable) {
-                it.resumeWithException(t)
-            }
-        })
-    }
-
-    /****** CaiNiao End ******/
 }

@@ -43,12 +43,3 @@ fun KuaiDi100ExpressDetails.toExpressTrace(): ExpressTrace {
 
     return ExpressTrace(formattedTime, newDateTime[0], newDateTime[1], context)
 }
-
-fun CaiNiaoExpressDetails.toExpressTrace(): ExpressTrace {
-    val originalSdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
-    val newSdf = SimpleDateFormat("MM-dd\nHH:mm", Locale.CHINA)
-    val dateTime = originalSdf.parse(time)
-    val newDateTime = newSdf.format(dateTime!!).split("\n")
-
-    return ExpressTrace(time, newDateTime[0], newDateTime[1], description)
-}
