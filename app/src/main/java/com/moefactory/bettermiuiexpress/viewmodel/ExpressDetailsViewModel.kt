@@ -2,11 +2,13 @@ package com.moefactory.bettermiuiexpress.viewmodel
 
 import android.app.Application
 import android.content.Context
+import android.widget.Toast
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
+import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
 import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.ktx.toLiveData
@@ -65,6 +67,8 @@ class ExpressDetailsViewModel(application: Application) : AndroidViewModel(appli
                 pref.edit {
                     putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId)
                 }
+
+                Toast.makeText(application, R.string.init_success, Toast.LENGTH_SHORT).show()
 
                 doRequest(generatedTrackId)
             } else {

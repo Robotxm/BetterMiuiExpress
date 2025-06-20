@@ -1,7 +1,6 @@
 package com.moefactory.bettermiuiexpress.hook
 
 import android.content.Context
-import androidx.core.content.edit
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.factory.configs
 import com.highcapable.yukihookapi.hook.factory.encase
@@ -17,7 +16,6 @@ import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import de.robv.android.xposed.XSharedPreferences
 import kotlinx.coroutines.runBlocking
-import java.util.UUID
 
 @InjectYukiHookWithXposed
 class HookEntry : IYukiHookXposedInit {
@@ -226,13 +224,7 @@ class HookEntry : IYukiHookXposedInit {
 
         val deviceTrackId = deviceTrackId
         val response = if (deviceTrackId.isNullOrEmpty()) {
-            val generatedTrackId = UUID.randomUUID().toString()
-            ExpressActualRepository.registerDeviceTrackIdActual(generatedTrackId)
-            pref?.edit {
-                putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId)
-            }
-
-            ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(convertedCompanyCode!!, mailNumber, phoneNumber, generatedTrackId)
+            null
         } else {
             ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(convertedCompanyCode!!, mailNumber, phoneNumber, deviceTrackId)
         }
