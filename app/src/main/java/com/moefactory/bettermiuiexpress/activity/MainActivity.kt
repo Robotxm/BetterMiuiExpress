@@ -28,7 +28,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
 
     override val viewBinding by viewBinding(ActivityMainBinding::inflate)
 
-    private val pref by lazy { getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE) }
+    private val pref by lazy {
+        try {
+            getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE)
+        } catch (e: SecurityException) {
+            null
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +53,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
                 }
             }
 
-            pref.edit {
+            pref?.edit {
                 if (dataProvider == DATA_PROVIDER_LEGACY_KUAIDI100) {
                     putString(PREF_KEY_SECRET_KEY, viewBinding.tietKey.text?.toString() ?: "")
                     putString(PREF_KEY_CUSTOMER, viewBinding.tietCustomer.text?.toString() ?: "")
@@ -71,14 +77,14 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
             startActivity(Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/fankes/YukiHookAPI")))
         }
 
-        viewBinding.tietCustomer.setText(pref.getString(PREF_KEY_CUSTOMER, "") ?: "")
-        viewBinding.tietKey.setText(pref.getString(PREF_KEY_SECRET_KEY, "") ?: "")
+        viewBinding.tietCustomer.setText(pref?.getString(PREF_KEY_CUSTOMER, "") ?: "")
+        viewBinding.tietKey.setText(pref?.getString(PREF_KEY_SECRET_KEY, "") ?: "")
 
         viewBinding.spDataProvider.setSelection(
-            pref.getInt(PREF_KEY_DATA_PROVIDER, DATA_PROVIDER_NEW_KUAIDI100)
+            pref?.getInt(PREF_KEY_DATA_PROVIDER, DATA_PROVIDER_NEW_KUAIDI100) ?: DATA_PROVIDER_NEW_KUAIDI100
         )
 
-        viewBinding.swDoNotInterceptShunfeng.isChecked = pref.getBoolean(PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG, true)
+        viewBinding.swDoNotInterceptShunfeng.isChecked = pref?.getBoolean(PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG, true) == true
 
         viewBinding.spDataProvider.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long
