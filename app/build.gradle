@@ -24,6 +24,23 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        def signingProperties = new Properties()
+        signingProperties.load(rootProject.file('local.properties').newDataInputStream())
+        debug {
+            storeFile file(signingProperties.getProperty('signing.storeFile'))
+            storePassword signingProperties.getProperty('signing.storePassword')
+            keyPassword signingProperties.getProperty('signing.keyPassword')
+            keyAlias signingProperties.getProperty('signing.keyAlias')
+        }
+        release {
+            storeFile file(signingProperties.getProperty('signing.storeFile'))
+            storePassword signingProperties.getProperty('signing.storePassword')
+            keyPassword signingProperties.getProperty('signing.keyPassword')
+            keyAlias signingProperties.getProperty('signing.keyAlias')
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
