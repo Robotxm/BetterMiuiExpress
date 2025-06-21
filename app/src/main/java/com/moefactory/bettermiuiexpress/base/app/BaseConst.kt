@@ -8,10 +8,6 @@ const val BME_MAIN_ACTIVITY_ALIAS = "com.moefactory.bettermiuiexpress.activity.M
 // Package name
 const val PA_PACKAGE_NAME = "com.miui.personalassistant"
 
-// Fully-qualified name of ExpressIntentUtils
-const val PA_EXPRESS_INTENT_UTILS =
-    "com.miui.personalassistant.service.express.ExpressIntentUtils"
-
 // Fully-qualified name of ExpressRouter
 const val PA_EXPRESS_ROUTER = "com.miui.personalassistant.service.express.route.ExpressRouter"
 
