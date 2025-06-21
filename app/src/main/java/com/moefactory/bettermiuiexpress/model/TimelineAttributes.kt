@@ -5,18 +5,18 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class TimelineAttributes(
-        var markerSize: Int,
-        var markerColor: Int,
-        var markerInCenter: Boolean,
-        var markerLeftPadding: Int,
-        var markerTopPadding: Int,
-        var markerRightPadding: Int,
-        var markerBottomPadding: Int,
-        var linePadding: Int,
-        var lineWidth: Int,
-        var startLineColor: Int,
-        var endLineColor: Int,
-        var lineStyle: Int,
-        var lineDashWidth: Int,
-        var lineDashGap: Int
-): Parcelable
+    val markerSize: Int,
+    val markerColor: Int,
+    val markerInCenter: Boolean,
+    val markerLeftPadding: Int,
+    val markerTopPadding: Int,
+    val markerRightPadding: Int,
+    val markerBottomPadding: Int,
+    val linePadding: Int,
+    val lineWidth: Int,
+    val startLineColor: Int,
+    val endLineColor: Int,
+    val lineStyle: Int,
+    val lineDashWidth: Int,
+    val lineDashGap: Int
+) : Parcelable
