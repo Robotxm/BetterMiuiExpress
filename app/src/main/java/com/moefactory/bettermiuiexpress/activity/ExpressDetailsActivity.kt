@@ -8,7 +8,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -17,6 +17,7 @@ import android.text.style.URLSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
@@ -39,6 +40,9 @@ import com.moefactory.bettermiuiexpress.model.ExpressTrace
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
 import com.moefactory.bettermiuiexpress.model.TimelineAttributes
 import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
+import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 @SuppressLint("WorldReadableFiles")
 class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false) {
@@ -82,13 +86,43 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setTaskDescription(ActivityManager.TaskDescription(getString(R.string.express_details_title)))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            setTaskDescription(ActivityManager.TaskDescription(getString(R.string.express_details_title), R.drawable.ic_pa))
+        } else {
+            setTaskDescription(ActivityManager.TaskDescription(getString(R.string.express_details_title)))
+        }
 
         if (miuiExpress == null) {
             Toast.makeText(this, R.string.unexpected_error, Toast.LENGTH_SHORT).show()
             finish()
             return
         }
+
+        initUI()
+
+        initObserver()
+
+        viewModel.queryExpressDetails(
+            miuiExpress!!.mailNumber,
+            miuiExpress!!.companyCode,
+            miuiExpress!!.phoneNumber,
+            deviceTrackId
+        )
+    }
+
+    private fun initUI() {
+        ViewCompat.setOnApplyWindowInsetsListener(viewBinding.mtToolbar) { v, insets ->
+            val stateBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            (v.layoutParams as? ViewGroup.MarginLayoutParams)?.apply {
+                leftMargin = stateBars.left
+                topMargin = stateBars.top
+                rightMargin = stateBars.right
+                bottomMargin = stateBars.bottom
+            }
+            insets
+        }
+
+        initTimeline()
 
         viewBinding.stateLayout.apply {
             loadingLayout = R.layout.loading_layout
@@ -98,8 +132,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             onContent {
                 viewBinding.rvTimeline.doOnNextLayout {
                     val areAllItemsVisible =
-                        (viewBinding.rvTimeline.layoutManager as LinearLayoutManager)
-                            .findLastCompletelyVisibleItemPosition() == (viewBinding.rvTimeline.adapter?.itemCount
+                        (viewBinding.rvTimeline.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() == (viewBinding.rvTimeline.adapter?.itemCount
                             ?: 1) - 1
                     if (areAllItemsVisible) {
                         viewBinding.rvTimeline.overScrollMode = View.OVER_SCROLL_NEVER
@@ -112,7 +145,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         viewBinding.actionBarTitle.text = miuiExpress?.companyName
         viewBinding.actionBarTitle.setOnLongClickListener {
             val debugMiuiExpress = miuiExpress?.copy(phoneNumber = null)
-            (getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)?.setPrimaryClip(
+            (getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager)?.setPrimaryClip(
                 ClipData.newPlainText("BME-Debug", debugMiuiExpress.toString())
             )
             Toast.makeText(this, R.string.debug_info_copied, Toast.LENGTH_SHORT).show()
@@ -121,9 +154,12 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         }
         viewBinding.up.setOnClickListener { onBackPressed() }
 
-        viewBinding.tvMailNumber.text =
-            getString(R.string.express_details_mail_number, miuiExpress!!.mailNumber)
+        viewBinding.tvMailNumber.text = getString(R.string.express_details_mail_number, miuiExpress!!.mailNumber)
 
+        viewBinding.stateLayout.showLoading()
+    }
+
+    private fun initObserver() {
         viewModel.kuaiDi100CompanyInfo.observe(this) {
             viewModel.queryExpressDetails(
                 miuiExpress!!.mailNumber,
@@ -149,22 +185,12 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 it.exceptionOrNull()?.printStackTrace()
             }
         }
-
-        initTimeline()
-
-        viewBinding.stateLayout.showLoading()
-        viewModel.queryExpressDetails(
-            miuiExpress!!.mailNumber,
-            miuiExpress!!.companyCode,
-            miuiExpress!!.phoneNumber,
-            deviceTrackId
-        )
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_jump -> {
-                startThirdAppByUris(uris!!)
+                startThirdAppByUris(uris)
                 finish()
                 true
             }
@@ -179,7 +205,11 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         return true
     }
 
-    private fun startThirdAppByUris(uris: ArrayList<ExpressInfoUriWrapper>) {
+    private fun startThirdAppByUris(uris: ArrayList<ExpressInfoUriWrapper>?) {
+        if (uris.isNullOrEmpty()) {
+            return
+        }
+
         uris.sort()
         for (uri in uris) {
             try {
@@ -187,7 +217,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                     Intent(Intent.ACTION_VIEW)
                         .addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING)
                         .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                        .setData(Uri.parse(uri.link))
+                        .setData(uri.link.toUri())
                 )
                 return
             } catch (_: Exception) {
@@ -237,8 +267,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                     lineStyleDashLength = attributes.lineDashWidth
                     lineStyleDashGap = attributes.lineDashGap
 
-                    val nodeType =
-                        TimelineView.getTimeLineViewType(absoluteAdapterPosition, itemCount)
+                    val nodeType = TimelineView.getTimeLineViewType(absoluteAdapterPosition, itemCount)
                     when (absoluteAdapterPosition) {
                         0 -> setEndLineColor(attributes.endLineColor, nodeType)
                         itemCount -> setStartLineColor(attributes.startLineColor, nodeType)
@@ -254,8 +283,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                     binding.tvDatetime.setTextColor(context.getColor(R.color.pa_express_progress_item_first_text))
                     binding.tvCurrentStatus.setTextColor(context.getColor(R.color.pa_express_progress_item_first_text))
                 } else {
-                    binding.node.marker =
-                        AppCompatResources.getDrawable(context, R.drawable.dot_previous)
+                    binding.node.marker = AppCompatResources.getDrawable(context, R.drawable.dot_previous)
                     binding.tvDatetime.setTextColor(context.getColor(R.color.pa_express_progress_item_text))
                     binding.tvCurrentStatus.setTextColor(context.getColor(R.color.pa_express_progress_item_text))
                 }
