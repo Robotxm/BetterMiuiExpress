@@ -7,6 +7,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -38,9 +39,9 @@ import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
 import com.moefactory.bettermiuiexpress.databinding.ItemTimelineNodeBinding
 import com.moefactory.bettermiuiexpress.ktx.dp
-import com.moefactory.bettermiuiexpress.model.ExpressInfoUriWrapper
 import com.moefactory.bettermiuiexpress.model.ExpressTrace
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
+import com.moefactory.bettermiuiexpress.model.ExpressInfoJumpListWrapper
 import com.moefactory.bettermiuiexpress.model.TimelineAttributes
 import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
 
@@ -55,7 +56,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         fun gotoDetailsActivity(
             context: Context,
             miuiExpress: MiuiExpress,
-            uris: ArrayList<ExpressInfoUriWrapper>?
+            uris: ArrayList<ExpressInfoJumpListWrapper>?
         ) {
             if (context is Activity) { // Click items in details activity
                 context.startActivity(
@@ -76,7 +77,7 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
     override val viewBinding by viewBinding(ActivityExpressDetailsBinding::inflate)
     private val miuiExpress by lazy { intent.getParcelableExtra<MiuiExpress>(INTENT_EXPRESS_SUMMARY) }
-    private val uris by lazy { intent.getParcelableArrayListExtra<ExpressInfoUriWrapper>(INTENT_URL_CANDIDATES) }
+    private val uris by lazy { intent.getParcelableArrayListExtra<ExpressInfoJumpListWrapper>(INTENT_URL_CANDIDATES) }
     private val viewModel by viewModels<ExpressDetailsViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -206,7 +207,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         return when (item.itemId) {
             R.id.action_jump -> {
                 startThirdAppByUris(uris)
-                finish()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -220,27 +220,46 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
         return true
     }
 
-    private fun startThirdAppByUris(uris: ArrayList<ExpressInfoUriWrapper>?) {
-        if (uris.isNullOrEmpty()) {
+    private fun startThirdAppByUris(jumpList: ArrayList<ExpressInfoJumpListWrapper>?) {
+        if (jumpList.isNullOrEmpty()) {
             return
         }
 
-        uris.sort()
-        for (uri in uris) {
-            try {
-                startActivity(
-                    Intent(Intent.ACTION_VIEW)
-                        .addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING)
-                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                        .setData(uri.link.toUri())
-                )
-                return
-            } catch (_: Exception) {
-                // No need to process
+        for (uri in jumpList) {
+            if (uri.type == "applet" && !resolvePackage("com.tencent.mm")) {
+                // Missing wechat
+            } else if (uri.link.isNullOrEmpty()) {
+                // Missing jump link
+            } else {
+                val intent = Intent("android.intent.action.VIEW")
+                intent.data = uri.link.toUri()
+                if (tryToStartThirdPartyActivity(intent)) {
+                    finish()
+                    return
+                }
             }
         }
 
         Toast.makeText(this, R.string.failed_to_jump, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun resolvePackage(packageName: String?): Boolean {
+        return try {
+            packageName != null && packageManager.getPackageInfo(packageName, 0) != null
+        } catch (_: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    private fun tryToStartThirdPartyActivity(intent: Intent): Boolean {
+        return try {
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private fun initTimeline() {

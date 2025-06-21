@@ -7,11 +7,13 @@ import kotlinx.parcelize.Parcelize
 
 fun Any.toExpressInfoWrapper() = ExpressInfoWrapper(this)
 
-fun Any.toExpressInfoUriWrapper(): ExpressInfoUriWrapper {
-    val expressInfoUriClass = this.javaClass
-    val link = expressInfoUriClass.getMethod("getLink").invoke(this) as String
-    val priority = expressInfoUriClass.getMethod("getPriority").invoke(this) as Int
-    return ExpressInfoUriWrapper(link, priority)
+fun Any.toExpressInfoJumpListWrapper(): ExpressInfoJumpListWrapper {
+    val thirdPartyUriClass = this.javaClass
+
+    val link = thirdPartyUriClass.getMethod("getLink").invoke(this) as? String
+    val type = thirdPartyUriClass.getMethod("getType").invoke(this) as? String
+
+    return ExpressInfoJumpListWrapper(link, type)
 }
 
 fun Any.toExpressEntryWrapper() = ExpressEntryWrapper(this)
@@ -60,15 +62,10 @@ val ExpressInfoWrapper.isXiaomiOrJingDong: Boolean
     get() = isXiaomi || isJingDong
 
 @Parcelize
-data class ExpressInfoUriWrapper(
-    var link: String,
-    var priority: Int
-) : Comparable<ExpressInfoUriWrapper>, Parcelable {
-
-    override fun compareTo(other: ExpressInfoUriWrapper): Int {
-        return priority - other.priority
-    }
-}
+data class ExpressInfoJumpListWrapper(
+    val link: String?,
+    val type: String?
+) : Parcelable
 
 class ExpressEntryWrapper(private val expressEntryObject: Any) {
 
@@ -82,9 +79,8 @@ class ExpressEntryWrapper(private val expressEntryObject: Any) {
         get() = expressEntryClass.getField("orderNumber").get(expressEntryObject) as String
     val phone: String?
         get() = expressEntryClass.getField("phone").get(expressEntryObject) as? String
-    val uris: List<*>?
-        get() = expressEntryClass.getMethod("getUris")
-            .invoke(expressEntryObject) as List<*>?
+    val jumpList: List<*>?
+        get() = expressEntryClass.getMethod("getJumpList").invoke(expressEntryObject) as List<*>?
     val provider: String?
         get() = expressEntryClass.getMethod("getProvider").invoke(expressEntryObject) as? String
 }
