@@ -1,7 +1,6 @@
 package com.moefactory.bettermiuiexpress.base.app
 
 const val PREF_NAME = "better_miui_express"
-const val PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG = "doNotInterceptShunFeng"
 const val PREF_KEY_DEVICE_TRACK_ID = "deviceTrackId"
 
 const val BME_MAIN_ACTIVITY_ALIAS = "com.moefactory.bettermiuiexpress.activity.MainActivityAlias"

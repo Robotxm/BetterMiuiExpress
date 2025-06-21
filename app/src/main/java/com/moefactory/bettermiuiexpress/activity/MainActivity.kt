@@ -12,7 +12,6 @@ import com.highcapable.yukihookapi.YukiHookAPI
 import com.highcapable.yukihookapi.YukiHookAPI.Status.Executor
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
-import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG
 import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityMainBinding
@@ -48,8 +47,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
         viewBinding.mcvYuki.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW).setData("https://github.com/HighCapable/YukiHookAPI".toUri()))
         }
-
-        viewBinding.swDoNotInterceptShunfeng.isChecked = pref?.getBoolean(PREF_KEY_DO_NOT_INTERCEPT_SHUNFENG, true) == true
 
         viewBinding.tvYukiVersion.text = getString(R.string.yuki_version, YukiHookAPI.VERSION)
 

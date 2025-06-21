@@ -12,7 +12,6 @@
     <string name="active">模块已激活</string>
     <string name="active_hook_framework_version">Hook 框架: %1$s (API %2$d)</string>
     <string name="github">GitHub</string>
-    <string name="coolapk">酷安</string>
     <string name="blog">博客</string>
     <string name="jump_to_third_party_app">转到第三方应用</string>
     <string name="app_express_detail_list_empty_text">暂无运单信息，或数据同步延迟，请稍后再试\n如有需求，可自行前往相应快递官网查询</string>
@@ -27,6 +26,5 @@
     <string name="legacy_kuaidi100">快递 100</string>
     <string name="new_kuaidi100">新版快递 100</string>
     <string name="kuaidi100_fields_required">请输入快递 100 查询 API 的 customer 和 key</string>
-    <string name="do_not_intercept_shunfeng">顺丰速运快递跳转系统快应用</string>
     <string name="init_success">初始化成功</string>
 </resources>

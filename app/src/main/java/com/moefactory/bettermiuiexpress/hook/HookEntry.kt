@@ -4,6 +4,7 @@ import android.content.Context
 import com.highcapable.yukihookapi.annotation.xposed.InjectYukiHookWithXposed
 import com.highcapable.yukihookapi.hook.factory.configs
 import com.highcapable.yukihookapi.hook.factory.encase
+import com.highcapable.yukihookapi.hook.factory.method
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
@@ -38,111 +39,90 @@ class HookEntry : IYukiHookXposedInit {
         loadApp(name = PA_PACKAGE_NAME) {
             // From PA 5.5.55, use ExpressRouter
             // public static void route(Context context, Object obj, ExpressEntry expressEntry)
-            findClass(PA_EXPRESS_ROUTER)
-                .hook {
-                    val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return@loadApp
-                    injectMember {
-                        method {
-                            name = "route"
-                            param(ContextClass, ObjectClass, expressEntryClass)
-                        }
+            PA_EXPRESS_ROUTER.toClassOrNull()?.method {
+                val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return@loadApp
 
-                        replaceAny {
-                            val context = args().first().cast<Context>()!!
-                            val expressEntry = args(2).any()!!
-                            val expressEntryWrapper = expressEntry.toExpressEntryWrapper()
-                            if (jumpToDetailsActivity(context, expressEntryWrapper)) {
-                                return@replaceAny null
-                            }
-
-                            // Other details will be processed normally
-                            return@replaceAny invokeOriginal(*args)
-                        }
+                name = "route"
+                param(ContextClass, ObjectClass, expressEntryClass)
+            }?.hook {
+                replaceAny {
+                    val context = args().first().cast<Context>()!!
+                    val expressEntry = args(2).any()!!
+                    val expressEntryWrapper = expressEntry.toExpressEntryWrapper()
+                    if (jumpToDetailsActivity(context, expressEntryWrapper)) {
+                        return@replaceAny null
                     }
+
+                    // Other details will be processed normally
+                    return@replaceAny invokeOriginal(*args)
                 }
+            }
 
-
-            // Old version
-            // public static String gotoExpressDetailPage(Context context, ExpressEntry expressEntry, boolean z, boolean z2)
             // New version
             // public static String gotoExpressDetailPage(Context context, View view, ExpressEntry expressEntry, boolean z, boolean z2, Intent intent, int i2)
-            findClass(PA_EXPRESS_INTENT_UTILS)
-                .hook {
-                    val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return@loadApp
-                    injectMember {
-                        var isNewVersion = false
+            PA_EXPRESS_INTENT_UTILS.toClassOrNull()?.method {
+                val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return@loadApp
 
-                        method {
-                            name = "gotoExpressDetailPage"
-                            param(ContextClass, expressEntryClass, BooleanType, BooleanType)
-                        }.remedys {
-                            method {
-                                name = "gotoExpressDetailPage"
-                                param(
-                                    ContextClass,
-                                    ViewClass,
-                                    expressEntryClass,
-                                    BooleanType,
-                                    BooleanType,
-                                    IntentClass,
-                                    IntType
-                                )
-                            }.onFind { isNewVersion = true }
-                        }
-
-                        replaceAny {
-                            val context = args().first().cast<Context>()!!
-                            val expressEntry = args(index = if (isNewVersion) 2 else 1).any()!!
-                            val expressEntryWrapper = expressEntry.toExpressEntryWrapper()
-                            if (jumpToDetailsActivity(context, expressEntryWrapper)) {
-                                return@replaceAny null
-                            }
-
-                            // Other details will be processed normally
-                            return@replaceAny invokeOriginal(*args)
-                        }
+                name = "gotoExpressDetailPage"
+                name = "gotoExpressDetailPage"
+                param(
+                    ContextClass,
+                    ViewClass,
+                    expressEntryClass,
+                    BooleanType,
+                    BooleanType,
+                    IntentClass,
+                    IntType
+                )
+            }?.hook {
+                replaceAny {
+                    val context = args().first().cast<Context>()!!
+                    val expressEntry = args(index = 2).any()
+                    val expressEntryWrapper = expressEntry?.toExpressEntryWrapper()
+                    if (expressEntryWrapper != null && jumpToDetailsActivity(context, expressEntryWrapper)) {
+                        return@replaceAny null
                     }
+
+                    // Other details will be processed normally
+                    return@replaceAny invokeOriginal(*args)
                 }
+            }
 
             // Hook ExpressRepository$saveExpress
             // Save the latest detail
-            findClass(PA_EXPRESS_REPOSITOIRY)
-                .hook {
-                    injectMember {
-                        method {
-                            name = "saveExpress"
-                            param(JavaListClass)
-                        }
-                        beforeHook {
-                            runBlocking {
-                                val expressInfoList = args().first().cast<java.util.List<*>>()
-                                    ?.map { it.toExpressInfoWrapper() }
-                                    ?.filter { !it.isXiaomiOrJingDong } // Skip packages from Xiaomi and JingDong
-                                    ?: return@runBlocking
-                                for (expressInfoWrapper in expressInfoList) {
-                                    val companyCode = expressInfoWrapper.companyCode
-                                    val mailNumber = expressInfoWrapper.orderNumber
-                                    val phoneNumber = expressInfoWrapper.phone ?: expressInfoWrapper.sendPhone
+            PA_EXPRESS_REPOSITOIRY.toClassOrNull()?.method {
+                name = "saveExpress"
+                param(JavaListClass)
+            }?.hook {
+                before {
+                    runBlocking {
+                        val expressInfoList = args().first().cast<java.util.List<*>>()
+                            ?.map { it.toExpressInfoWrapper() }
+                            ?.filter { !it.isXiaomiOrJingDong } // Skip packages from Xiaomi and JingDong
+                            ?: return@runBlocking
+                        for (expressInfoWrapper in expressInfoList) {
+                            val companyCode = expressInfoWrapper.companyCode
+                            val mailNumber = expressInfoWrapper.orderNumber
+                            val phoneNumber = expressInfoWrapper.phone ?: expressInfoWrapper.sendPhone
 
-                                    val detailList = fetchExpressDetails(mailNumber, companyCode, phoneNumber)
+                            val detailList = fetchExpressDetails(mailNumber, companyCode, phoneNumber)
 
-                                    // Ignore invalid result
-                                    if (detailList.isNullOrEmpty()) {
-                                        continue
-                                    }
-
-                                    // Save latest trace
-                                    val detailClass = PA_EXPRESS_INFO_DETAIL.toClassOrNull() ?: return@runBlocking
-                                    saveLatestExpressTrace(
-                                        expressInfoWrapper,
-                                        detailClass,
-                                        detailList
-                                    )
-                                }
+                            // Ignore invalid result
+                            if (detailList.isNullOrEmpty()) {
+                                continue
                             }
+
+                            // Save latest trace
+                            val detailClass = PA_EXPRESS_INFO_DETAIL.toClassOrNull() ?: return@runBlocking
+                            saveLatestExpressTrace(
+                                expressInfoWrapper,
+                                detailClass,
+                                detailList
+                            )
                         }
                     }
                 }
+            }
         }
     }
 
@@ -157,7 +137,7 @@ class HookEntry : IYukiHookXposedInit {
         when {
             originalDetails == null -> {
                 // Null list, create a new instance and put the latest detail
-                val newDetail = detailClass.newInstance()
+                val newDetail = detailClass.getDeclaredConstructor().newInstance()
                 val newDetailWrapper =
                     newDetail.toExpressInfoDetailWrapper()
                 newDetailWrapper.desc = detailList[0].description
@@ -168,7 +148,7 @@ class HookEntry : IYukiHookXposedInit {
             }
             originalDetails.isEmpty() -> {
                 // Empty list, put the latest detail
-                val newDetail = detailClass.newInstance()
+                val newDetail = detailClass.getDeclaredConstructor().newInstance()
                 val newDetailWrapper =
                     newDetail.toExpressInfoDetailWrapper()
                 newDetailWrapper.desc = detailList[0].description
