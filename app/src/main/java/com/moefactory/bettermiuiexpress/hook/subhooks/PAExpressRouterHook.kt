@@ -63,23 +63,13 @@ object PAExpressRouterHook : YukiBaseHooker() {
         val phoneNumber = expressEntryWrapper.phone
         // Check if the details will be showed in third-party apps(taobao, cainiao, etc.)
         val jumpList = expressEntryWrapper.jumpList?.mapNotNull { it?.toExpressInfoJumpListWrapper() }
-        if (!jumpList.isNullOrEmpty()) {
-            // Store urls for future use such as jumping to third-party apps
+        if (!expressEntryWrapper.shouldUseNativeUI()) {
             ExpressDetailsActivity.gotoDetailsActivity(
                 context,
                 MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
-                ArrayList(jumpList)
+                jumpList?.let { ArrayList(it) }
             )
             return true
-        } else {
-            if (!expressEntryWrapper.shouldUseNativeUI()) { // Details of packages from neither Xiaomi nor JiTu will be displayed in built-in app
-                ExpressDetailsActivity.gotoDetailsActivity(
-                    context,
-                    MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),
-                    null
-                )
-                return true
-            }
         }
 
         return false
