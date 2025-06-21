@@ -59,8 +59,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
         }
 
         if (YukiHookAPI.Status.isModuleActive) {
-            Toast.makeText(this@MainActivity, "test", Toast.LENGTH_SHORT).show()
-
             lifecycleScope.launch(Dispatchers.IO) {
                 val currentGeneratedTrackId = prefs().getString(PREF_KEY_DEVICE_TRACK_ID)
                 if (currentGeneratedTrackId.isNotEmpty()) {
