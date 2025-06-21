@@ -106,7 +106,6 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
         val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
             ?: ExpressActualRepository.queryCompanyActual(mailNumber).firstOrNull()?.companyCode
 
-        val deviceTrackId = "deviceTrackId"
         if (deviceTrackId.isEmpty()) {
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
             val currentDateTimeString = sdf.format(Date())
