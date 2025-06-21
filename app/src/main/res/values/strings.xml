@@ -27,5 +27,6 @@
     <string name="new_kuaidi100">新版快递 100</string>
     <string name="kuaidi100_fields_required">请输入快递 100 查询 API 的 customer 和 key</string>
     <string name="init_success">初始化成功</string>
+    <string name="init_success_and_hide">初始化成功，5 秒后自动隐藏模块图标</string>
     <string name="failed_to_jump">跳转失败</string>
 </resources>

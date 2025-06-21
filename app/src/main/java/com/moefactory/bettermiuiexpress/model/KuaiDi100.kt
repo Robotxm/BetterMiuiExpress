@@ -17,7 +17,7 @@ open class KuaiDi100BaseRequestParam(
     @SerialName("uchannel") val userChannel: String = "null",
     @SerialName("nt") val networkType: String = "wifi",
     @SerialName("apiversion") val apiVersion: Int = 31,
-    val deviceId: String = UUID.randomUUID().toString().let { it.substring(0..(it.length / 2)) },
+    val deviceId: String = UUID.randomUUID().toString().replace("-", "").let { it.substring(0..(it.length / 2)) },
 )
 
 @Serializable

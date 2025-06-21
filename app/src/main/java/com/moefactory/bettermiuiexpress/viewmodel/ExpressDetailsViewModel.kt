@@ -1,12 +1,8 @@
 package com.moefactory.bettermiuiexpress.viewmodel
 
-import android.app.Application
-import android.widget.Toast
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.application
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.ktx.toLiveData
 import com.moefactory.bettermiuiexpress.model.ExpressDetails
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
@@ -22,7 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-class ExpressDetailsViewModel(application: Application) : AndroidViewModel(application) {
+class ExpressDetailsViewModel : ViewModel() {
 
     private val _expressDetails = MutableLiveData<Result<ExpressDetails>>()
     val expressDetails = _expressDetails.toLiveData()
@@ -60,8 +56,6 @@ class ExpressDetailsViewModel(application: Application) : AndroidViewModel(appli
                 val generatedTrackId = UUID.randomUUID().toString()
                 ExpressActualRepository.registerDeviceTrackIdActual(generatedTrackId)
                 onSaveTrackId(generatedTrackId)
-
-                Toast.makeText(application, R.string.init_success, Toast.LENGTH_SHORT).show()
 
                 doRequest(generatedTrackId)
             } else {

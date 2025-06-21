@@ -197,6 +197,8 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
             prefs().edit {
                 putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId)
             }
+
+            Toast.makeText(this, R.string.init_success, Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -15,6 +15,9 @@ import com.moefactory.bettermiuiexpress.model.toExpressTrace
 import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
 import com.moefactory.bettermiuiexpress.utils.ExpressCompanyUtils
 import kotlinx.coroutines.runBlocking
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 // Hook ExpressRepository$saveExpress
 // Save the latest detail
@@ -103,13 +106,22 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
         val convertedCompanyCode = ExpressCompanyUtils.convertCode(originalCompanyCode)
             ?: ExpressActualRepository.queryCompanyActual(mailNumber).firstOrNull()?.companyCode
 
-        val deviceTrackId = deviceTrackId
-        val response = if (deviceTrackId.isEmpty()) {
-            null
-        } else {
-            ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(convertedCompanyCode!!, mailNumber, phoneNumber, deviceTrackId)
+        val deviceTrackId = "deviceTrackId"
+        if (deviceTrackId.isEmpty()) {
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
+            val currentDateTimeString = sdf.format(Date())
+
+            return listOf(
+                ExpressTrace(
+                    fullDateTime = currentDateTimeString,
+                    date = currentDateTimeString.split(" ")[0],
+                    time = currentDateTimeString.split(" ")[1],
+                    description = "请先打开模块主界面完成初始化"
+                )
+            )
         }
 
+        val response = ExpressActualRepository.queryExpressDetailsFromKuaiDi100Actual(convertedCompanyCode!!, mailNumber, phoneNumber, deviceTrackId)
         return response?.lastResult?.data?.map { it.toExpressTrace() }?.sortedDescending()
     }
 }

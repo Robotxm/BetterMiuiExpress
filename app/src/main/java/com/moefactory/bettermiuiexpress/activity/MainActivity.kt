@@ -13,9 +13,13 @@ import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityMainBinding
+import com.moefactory.bettermiuiexpress.ktx.hideLauncherIcon
+import com.moefactory.bettermiuiexpress.ktx.isLauncherIconEnabled
 import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 @SuppressLint("WorldReadableFiles")
@@ -55,14 +59,29 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
         }
 
         if (YukiHookAPI.Status.isModuleActive) {
+            Toast.makeText(this@MainActivity, "test", Toast.LENGTH_SHORT).show()
+
             lifecycleScope.launch(Dispatchers.IO) {
+                val currentGeneratedTrackId = prefs().getString(PREF_KEY_DEVICE_TRACK_ID)
+                if (currentGeneratedTrackId.isNotEmpty()) {
+                    return@launch
+                }
+
                 val generatedTrackId = UUID.randomUUID().toString()
                 if (ExpressActualRepository.registerDeviceTrackIdActual(generatedTrackId)) {
                     prefs().edit {
                         putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId)
                     }
 
-                    Toast.makeText(this@MainActivity, R.string.init_success, Toast.LENGTH_SHORT).show()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, R.string.init_success_and_hide, Toast.LENGTH_SHORT).show()
+                    }
+
+                    delay(5000)
+
+                    if (isLauncherIconEnabled()) {
+                        hideLauncherIcon()
+                    }
                 }
             }
         }
