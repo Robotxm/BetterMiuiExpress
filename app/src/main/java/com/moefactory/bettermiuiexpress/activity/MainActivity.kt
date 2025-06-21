@@ -1,18 +1,16 @@
 package com.moefactory.bettermiuiexpress.activity
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.highcapable.yukihookapi.YukiHookAPI
 import com.highcapable.yukihookapi.YukiHookAPI.Status.Executor
+import com.highcapable.yukihookapi.hook.factory.prefs
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
-import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityMainBinding
 import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
@@ -24,14 +22,6 @@ import java.util.UUID
 class MainActivity : BaseActivity<ActivityMainBinding>(false) {
 
     override val viewBinding by viewBinding(ActivityMainBinding::inflate)
-
-    private val pref by lazy {
-        try {
-            getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE)
-        } catch (e: SecurityException) {
-            null
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +58,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
             lifecycleScope.launch(Dispatchers.IO) {
                 val generatedTrackId = UUID.randomUUID().toString()
                 if (ExpressActualRepository.registerDeviceTrackIdActual(generatedTrackId)) {
-                    pref?.edit {
+                    prefs().edit {
                         putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId)
                     }
 

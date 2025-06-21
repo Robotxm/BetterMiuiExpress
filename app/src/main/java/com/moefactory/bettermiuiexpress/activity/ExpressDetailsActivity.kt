@@ -22,15 +22,18 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnNextLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.drake.brv.utils.linear
 import com.drake.brv.utils.models
 import com.drake.brv.utils.setup
 import com.github.vipulasri.timelineview.TimelineView
+import com.highcapable.yukihookapi.hook.factory.prefs
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
-import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.databinding.ActivityExpressDetailsBinding
 import com.moefactory.bettermiuiexpress.databinding.ItemTimelineNodeBinding
@@ -40,9 +43,6 @@ import com.moefactory.bettermiuiexpress.model.ExpressTrace
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
 import com.moefactory.bettermiuiexpress.model.TimelineAttributes
 import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
-import androidx.core.net.toUri
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 
 @SuppressLint("WorldReadableFiles")
 class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false) {
@@ -79,10 +79,6 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
     private val uris by lazy { intent.getParcelableArrayListExtra<ExpressInfoUriWrapper>(INTENT_URL_CANDIDATES) }
     private val viewModel by viewModels<ExpressDetailsViewModel>()
 
-    private val pref by lazy { getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE) }
-    private val deviceTrackId: String?
-        get() = pref?.getString(PREF_KEY_DEVICE_TRACK_ID, null)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -102,11 +98,10 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
         initObserver()
 
-        viewModel.queryExpressDetails(
+        queryExpressDetails(
             miuiExpress!!.mailNumber,
             miuiExpress!!.companyCode,
             miuiExpress!!.phoneNumber,
-            deviceTrackId
         )
     }
 
@@ -161,11 +156,10 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
 
     private fun initObserver() {
         viewModel.kuaiDi100CompanyInfo.observe(this) {
-            viewModel.queryExpressDetails(
+            queryExpressDetails(
                 miuiExpress!!.mailNumber,
                 it.companyCode,
                 miuiExpress!!.phoneNumber,
-                deviceTrackId
             )
         }
         viewModel.expressDetails.observe(this) {
@@ -183,6 +177,25 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 viewBinding.tvStatus.setText(R.string.express_state_unknown)
                 viewBinding.stateLayout.showError()
                 it.exceptionOrNull()?.printStackTrace()
+            }
+        }
+    }
+
+    private fun queryExpressDetails(
+        mailNumber: String,
+        companyCode: String?,
+        phoneNumber: String?,
+    ) {
+        val deviceTrackId = prefs().getString(PREF_KEY_DEVICE_TRACK_ID)
+
+        viewModel.queryExpressDetails(
+            mailNumber,
+            companyCode,
+            phoneNumber,
+            deviceTrackId
+        ) { generatedTrackId ->
+            prefs().edit {
+                putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId)
             }
         }
     }
@@ -224,6 +237,8 @@ class ExpressDetailsActivity : BaseActivity<ActivityExpressDetailsBinding>(false
                 // No need to process
             }
         }
+
+        Toast.makeText(this, R.string.failed_to_jump, Toast.LENGTH_SHORT).show()
     }
 
     private fun initTimeline() {

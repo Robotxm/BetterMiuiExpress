@@ -99,7 +99,7 @@ val ExpressEntryWrapper.isShunfeng: Boolean
 val ExpressEntryWrapper.isJiTu: Boolean
     get() = provider == "JiTu"
 
-fun ExpressEntryWrapper.shouldUseNativeUI(pref: XSharedPreferences?): Boolean {
+fun ExpressEntryWrapper.shouldUseNativeUI(): Boolean {
     return isXiaomi || isJingDong || isJiTu
 }
 

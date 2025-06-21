@@ -1,16 +1,12 @@
 package com.moefactory.bettermiuiexpress.viewmodel
 
 import android.app.Application
-import android.content.Context
 import android.widget.Toast
-import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.moefactory.bettermiuiexpress.R
-import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
-import com.moefactory.bettermiuiexpress.base.app.PREF_NAME
 import com.moefactory.bettermiuiexpress.ktx.toLiveData
 import com.moefactory.bettermiuiexpress.model.ExpressDetails
 import com.moefactory.bettermiuiexpress.model.KuaiDi100Company
@@ -34,14 +30,13 @@ class ExpressDetailsViewModel(application: Application) : AndroidViewModel(appli
     private val _kuaiDi100CompanyInfo = MutableLiveData<KuaiDi100Company>()
     val kuaiDi100CompanyInfo = _kuaiDi100CompanyInfo.toLiveData()
 
-    private val pref by lazy { application.getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE) }
-
     @OptIn(ExperimentalCoroutinesApi::class)
     fun queryExpressDetails(
         mailNumber: String,
         companyCode: String?,
         phoneNumber: String?,
         trackId: String?,
+        onSaveTrackId: (String) -> Unit,
     ) {
         suspend fun doRequest(trackId: String) {
             if (!companyCode.isNullOrEmpty()) {
@@ -64,9 +59,7 @@ class ExpressDetailsViewModel(application: Application) : AndroidViewModel(appli
             if (trackId.isNullOrEmpty()) {
                 val generatedTrackId = UUID.randomUUID().toString()
                 ExpressActualRepository.registerDeviceTrackIdActual(generatedTrackId)
-                pref.edit {
-                    putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId)
-                }
+                onSaveTrackId(generatedTrackId)
 
                 Toast.makeText(application, R.string.init_success, Toast.LENGTH_SHORT).show()
 
