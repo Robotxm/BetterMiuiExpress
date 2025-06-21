@@ -25,8 +25,7 @@ fun jumpToDetailsActivity(
         )
         return true
     } else {
-        // Details of packages from Xiaomi or JingDong will be showed in built-in app
-        if (!expressEntryWrapper.shouldUseNativeUI()) {
+        if (!expressEntryWrapper.shouldUseNativeUI()) { // Details of packages from neither Xiaomi nor JiTu will be displayed in built-in app
             ExpressDetailsActivity.gotoDetailsActivity(
                 context,
                 MiuiExpress(companyCode, companyName, mailNumber, phoneNumber),

@@ -3,7 +3,6 @@ package com.moefactory.bettermiuiexpress.model
 import android.os.Parcelable
 import com.moefactory.bettermiuiexpress.ktx.BooleanPrimitiveType
 import com.moefactory.bettermiuiexpress.ktx.JavaStringClass
-import de.robv.android.xposed.XSharedPreferences
 import kotlinx.parcelize.Parcelize
 
 fun Any.toExpressInfoWrapper() = ExpressInfoWrapper(this)
