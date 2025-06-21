@@ -6,9 +6,9 @@ import com.highcapable.yukihookapi.hook.factory.encase
 import com.highcapable.yukihookapi.hook.xposed.proxy.IYukiHookXposedInit
 import com.moefactory.bettermiuiexpress.BuildConfig
 import com.moefactory.bettermiuiexpress.base.app.PA_PACKAGE_NAME
-import com.moefactory.bettermiuiexpress.hook.sub_hooks.PAExpressIntentUtilsHook
-import com.moefactory.bettermiuiexpress.hook.sub_hooks.PAExpressRepositoryHook
-import com.moefactory.bettermiuiexpress.hook.sub_hooks.PAExpressRouterHook
+import com.moefactory.bettermiuiexpress.hook.subhooks.PAExpressIntentUtilsHook
+import com.moefactory.bettermiuiexpress.hook.subhooks.PAExpressRepositoryHook
+import com.moefactory.bettermiuiexpress.hook.subhooks.PAExpressRouterHook
 
 @InjectYukiHookWithXposed
 class HookEntry : IYukiHookXposedInit {

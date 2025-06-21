@@ -1,4 +1,4 @@
-package com.moefactory.bettermiuiexpress.hook.sub_hooks
+package com.moefactory.bettermiuiexpress.hook.subhooks
 
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.highcapable.yukihookapi.hook.factory.method
