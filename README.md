@@ -40,3 +40,4 @@ BetterMiuiExpress 基于 GPLv3 开源，详细的协议内容在 Repository 内�
 - BetterMiuiExpress 现在基于 [YukiHookAPI](https://github.com/fankes/YukiHookAPI) 开发
 - @YifePlayte 对于老版本中调用菜鸟裹裹 API 的帮助
 - @dreamy06 对于极兔快递跳转的修改
+- @wlt233 对于新的 API 使用的帮助
