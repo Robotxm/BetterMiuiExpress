@@ -1,7 +1,7 @@
 package com.moefactory.bettermiuiexpress.hook.subhooks
 
+import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
 import com.moefactory.bettermiuiexpress.base.app.PA_EXPRESS_INFO_DETAIL
 import com.moefactory.bettermiuiexpress.base.app.PA_EXPRESS_REPOSITOIRY
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
@@ -27,9 +27,9 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
         get() = prefs.getString(PREF_KEY_DEVICE_TRACK_ID)
 
     override fun onHook() {
-        PA_EXPRESS_REPOSITOIRY.toClassOrNull()?.method {
+        PA_EXPRESS_REPOSITOIRY.toClassOrNull()?.resolve()?.firstMethod {
             name = "saveExpress"
-            param(JavaListClass)
+            parameters(JavaListClass)
         }?.hook {
             before {
                 runBlocking {

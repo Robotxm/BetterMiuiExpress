@@ -1,8 +1,8 @@
 package com.moefactory.bettermiuiexpress.hook.subhooks
 
 import android.content.Context
+import com.highcapable.kavaref.KavaRef.Companion.resolve
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
-import com.highcapable.yukihookapi.hook.factory.method
 import com.moefactory.bettermiuiexpress.activity.ExpressDetailsActivity
 import com.moefactory.bettermiuiexpress.base.app.PA_EXPRESS_ENTRY
 import com.moefactory.bettermiuiexpress.base.app.PA_EXPRESS_ROUTER
@@ -22,11 +22,11 @@ object PAExpressRouterHook : YukiBaseHooker() {
     override fun onHook() {
         val paExpressRouterClass = PA_EXPRESS_ROUTER.toClassOrNull()
 
-        paExpressRouterClass?.method {
+        paExpressRouterClass?.resolve()?.firstMethod {
             val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return
 
             name = "route"
-            param(ContextClass, ObjectClass, expressEntryClass)
+            parameters(ContextClass, ObjectClass, expressEntryClass)
         }?.hook {
             replaceAny {
                 val context = args().first().cast<Context>()!!
@@ -39,10 +39,10 @@ object PAExpressRouterHook : YukiBaseHooker() {
                     // From new versions of PA, details of packages from JingDong will be display in JD app by default, which is unexpected
                     // Here we just intercept it
                     args(1).any()?.let { arg1 ->
-                        paExpressRouterClass.method {
+                        paExpressRouterClass.resolve().firstMethod {
                             name = "gotoNative"
-                            param(ContextClass, ObjectClass, expressEntry::class.java)
-                        }.get().call(context, arg1, expressEntry)
+                            parameters(ContextClass, ObjectClass, expressEntry::class.java)
+                        }.invoke(context, arg1, expressEntry)
 
                         return@replaceAny null
                     }
