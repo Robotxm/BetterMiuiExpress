@@ -7,7 +7,9 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.rememberPlatformOverscrollFactory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -188,17 +191,19 @@ fun ExpressDetailsScreen(
 
                     Spacer(Modifier.height(20.dp))
 
-                    LazyColumn(modifier = Modifier.weight(1f).padding(bottom = 24.dp)) {
-                        items(state.details.traces.size) { index ->
-                            TraceRow(
-                                trace = state.details.traces[index],
-                                index = index,
-                                count = state.details.traces.size,
-                                onPhoneNumberClick = { phoneNumber ->
-                                    phoneToCall = phoneNumber
-                                    showCallDialog = true
-                                }
-                            )
+                    CompositionLocalProvider(LocalOverscrollFactory provides rememberPlatformOverscrollFactory()) {
+                        LazyColumn(modifier = Modifier.weight(1f).padding(bottom = 24.dp)) {
+                            items(state.details.traces.size) { index ->
+                                TraceRow(
+                                    trace = state.details.traces[index],
+                                    index = index,
+                                    count = state.details.traces.size,
+                                    onPhoneNumberClick = { phoneNumber ->
+                                        phoneToCall = phoneNumber
+                                        showCallDialog = true
+                                    }
+                                )
+                            }
                         }
                     }
                 }
