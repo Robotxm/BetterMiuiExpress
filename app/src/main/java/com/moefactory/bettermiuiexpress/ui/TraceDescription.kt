@@ -14,7 +14,7 @@ private val mobileNumberPattern = "(?<!\\d)1[3-9]\\d{9}(?!\\d)".toRegex()
 internal fun buildTraceDescription(
     description: String,
     linkColor: Color,
-    onDial: (String) -> Unit
+    onPhoneNumberClick: (String) -> Unit
 ): AnnotatedString = buildAnnotatedString {
     var offset = 0
     for (match in mobileNumberPattern.findAll(description)) {
@@ -22,7 +22,7 @@ internal fun buildTraceDescription(
         withLink(LinkAnnotation.Clickable(
             tag = "tel:${match.value}",
             styles = TextLinkStyles(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)),
-            linkInteractionListener = { onDial(match.value) }
+            linkInteractionListener = { onPhoneNumberClick(match.value) }
         )) { append(match.value) }
         offset = match.range.last + 1
     }

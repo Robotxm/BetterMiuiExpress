@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +56,7 @@ import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsUiState
 import com.vipulasri.timelineview.compose.LineStyle
 import com.vipulasri.timelineview.compose.Timeline
 import com.vipulasri.timelineview.compose.getLineType
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
@@ -69,6 +71,7 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.ChevronBackward
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 
 @Composable
@@ -83,6 +86,10 @@ fun ExpressDetailsScreen(
     onDial: (String) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+
+    var phoneToCall by rememberSaveable { mutableStateOf("") }
+
+    var showCallDialog by rememberSaveable { mutableStateOf(false) }
 
     val backgroundColor = colorResource(R.color.express_details_background)
 
@@ -185,7 +192,15 @@ fun ExpressDetailsScreen(
 
                     LazyColumn(modifier = Modifier.weight(1f).padding(bottom = 24.dp)) {
                         items(state.details.traces.size) { index ->
-                            TraceRow(state.details.traces[index], index, state.details.traces.size, onDial)
+                            TraceRow(
+                                trace = state.details.traces[index],
+                                index = index,
+                                count = state.details.traces.size,
+                                onPhoneNumberClick = { phoneNumber ->
+                                    phoneToCall = phoneNumber
+                                    showCallDialog = true
+                                }
+                            )
                         }
                     }
                 }
@@ -257,11 +272,43 @@ fun ExpressDetailsScreen(
                 }
             }
         }
+
+        OverlayDialog(
+            show = showCallDialog,
+            title = phoneToCall,
+            onDismissRequest = { showCallDialog = false }
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                TextButton(
+                    text = stringResource(R.string.cancel),
+                    modifier = Modifier.weight(1f),
+                    textStyle = MiuixTheme.textStyles.main.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    onClick = { showCallDialog = false }
+                )
+
+                TextButton(
+                    text = stringResource(R.string.call),
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonColorsPrimary(),
+                    textStyle = MiuixTheme.textStyles.main.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    onClick = {
+                        if (showCallDialog) {
+                            showCallDialog = false
+                            onDial(phoneToCall)
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun TraceRow(trace: ExpressTrace, index: Int, count: Int, onDial: (String) -> Unit) {
+private fun TraceRow(trace: ExpressTrace, index: Int, count: Int, onPhoneNumberClick: (String) -> Unit) {
     val textColor = colorResource(
         if (index == 0) R.color.pa_express_progress_item_first_text else R.color.pa_express_progress_item_text
     )
@@ -312,8 +359,8 @@ private fun TraceRow(trace: ExpressTrace, index: Int, count: Int, onDial: (Strin
 
         val linkColor = colorResource(R.color.miuiUrlSpanColor)
 
-        val description = remember(trace.description, linkColor, onDial) {
-            buildTraceDescription(trace.description, linkColor, onDial)
+        val description = remember(trace.description, linkColor, onPhoneNumberClick) {
+            buildTraceDescription(trace.description, linkColor, onPhoneNumberClick)
         }
 
         Text(

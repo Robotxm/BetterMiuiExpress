@@ -31,6 +31,8 @@
     <string name="failed_to_jump">跳转失败</string>
     <string name="navigate_back">返回</string>
     <string name="more_options">更多选项</string>
+    <string name="cancel">取消</string>
+    <string name="call">呼叫</string>
     <string name="retry">重试</string>
     <string name="express_load_failed">运单信息加载失败，请稍后重试</string>
 </resources>
