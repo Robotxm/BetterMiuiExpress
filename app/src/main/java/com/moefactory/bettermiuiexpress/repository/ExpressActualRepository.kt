@@ -1,6 +1,5 @@
 package com.moefactory.bettermiuiexpress.repository
 
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.moefactory.bettermiuiexpress.BuildConfig
 import com.moefactory.bettermiuiexpress.api.KuaiDi100Api
 import com.moefactory.bettermiuiexpress.base.cookiejar.MemoryCookieJar
@@ -21,6 +20,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import javax.net.ssl.X509TrustManager
 import kotlin.coroutines.resume

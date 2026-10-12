@@ -82,7 +82,7 @@ dependencies {
     implementation libs.okhttp
     implementation libs.okhttp.logging.interceptor
     implementation libs.androidx.lifecycle.viewmodel.ktx
-    implementation libs.retrofit.kotlinx.serialization.converter
+    implementation libs.retrofit.converter.kotlinx.serialization
     implementation libs.androidx.lifecycle.livedata.ktx
     implementation libs.brv
     implementation libs.retrofit.converter.scalars
