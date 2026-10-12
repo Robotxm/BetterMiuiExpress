@@ -3,6 +3,7 @@ package com.moefactory.bettermiuiexpress.activity
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.ActivityOptions
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -18,6 +19,7 @@ import androidx.core.net.toUri
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.highcapable.yukihookapi.hook.factory.prefs
+import com.moefactory.bettermiuiexpress.BuildConfig
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
@@ -31,6 +33,7 @@ import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
 class ExpressDetailsActivity : BaseActivity() {
     companion object {
         private const val ACTION_GO_TO_DETAILS = "com.moefactory.bettermiuiexpress.details"
+        private const val INTENT_CUSTOM_TRANSITION = "custom_transition"
         const val INTENT_EXPRESS_SUMMARY = "express_summary"
         const val INTENT_URL_CANDIDATES = "url_candidates"
 
@@ -40,10 +43,18 @@ class ExpressDetailsActivity : BaseActivity() {
             uris: ArrayList<ExpressInfoJumpListWrapper>?
         ) {
             if (context is Activity) { // Click items in details activity
+                val moduleContext = context.createPackageContext(BuildConfig.APPLICATION_ID, 0)
+                val options = ActivityOptions.makeCustomAnimation(
+                    moduleContext,
+                    R.anim.express_details_fade_in,
+                    R.anim.express_details_hold
+                )
                 context.startActivity(
                     Intent(ACTION_GO_TO_DETAILS)
                         .putExtra(INTENT_EXPRESS_SUMMARY, miuiExpress)
                         .putExtra(INTENT_URL_CANDIDATES, uris)
+                        .putExtra(INTENT_CUSTOM_TRANSITION, true),
+                    options.toBundle()
                 )
             } else { // Click items in card
                 context.startActivity(
@@ -66,6 +77,15 @@ class ExpressDetailsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && intent.getBooleanExtra(INTENT_CUSTOM_TRANSITION, false)) {
+            overrideActivityTransition(
+                OVERRIDE_TRANSITION_CLOSE,
+                R.anim.express_details_hold,
+                R.anim.express_details_fade_out
+            )
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             setTaskDescription(ActivityManager.TaskDescription(getString(R.string.express_details_title), R.drawable.ic_pa))
         } else {
@@ -98,6 +118,15 @@ class ExpressDetailsActivity : BaseActivity() {
             }
         }
         queryExpressDetails()
+    }
+
+    @Suppress("DEPRECATION")
+    override fun finish() {
+        super.finish()
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE && intent.getBooleanExtra(INTENT_CUSTOM_TRANSITION, false)) {
+            overridePendingTransition(R.anim.express_details_hold, R.anim.express_details_fade_out)
+        }
     }
 
     private fun queryExpressDetails() {
