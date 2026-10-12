@@ -8,6 +8,7 @@ import com.moefactory.bettermiuiexpress.BuildConfig
 import com.moefactory.bettermiuiexpress.base.app.PA_PACKAGE_NAME
 import com.moefactory.bettermiuiexpress.hook.subhooks.PAExpressRepositoryHook
 import com.moefactory.bettermiuiexpress.hook.subhooks.PAExpressRouterHook
+import com.moefactory.bettermiuiexpress.utils.OkHttpInitializer
 
 @InjectYukiHookWithXposed
 class HookEntry : IYukiHookXposedInit {
@@ -20,6 +21,16 @@ class HookEntry : IYukiHookXposedInit {
     }
 
     override fun onHook() = encase {
-        loadApp(name = PA_PACKAGE_NAME, PAExpressRouterHook, PAExpressRepositoryHook)
+        loadApp(name = PA_PACKAGE_NAME) {
+            onAppLifecycle {
+                attachBaseContext { context, hasCalledSuper ->
+                    if (hasCalledSuper) {
+                        OkHttpInitializer.initialize(context)
+                    }
+                }
+            }
+            loadHooker(PAExpressRouterHook)
+            loadHooker(PAExpressRepositoryHook)
+        }
     }
 }
