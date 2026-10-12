@@ -9,9 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.rememberPlatformOverscrollFactory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -121,10 +118,6 @@ fun ExpressDetailsScreen(
 
     val scrollBehavior = MiuixScrollBehavior(state = appBarState, canScroll = { scrollEnabled.value })
 
-    val pageScrollState = rememberScrollableState { delta ->
-        -timelineState.dispatchRawDelta(-delta)
-    }
-
     val scrollConnection = remember(appBarState, scrollBehavior) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -224,8 +217,6 @@ fun ExpressDetailsScreen(
                 Column(
                     modifier = Modifier.fillMaxSize().padding(padding)
                         .padding(start = 28.dp, top = 8.dp, end = 28.dp)
-                        .nestedScroll(scrollConnection)
-                        .scrollable(pageScrollState, Orientation.Vertical, enabled = canCoordinateScroll)
                 ) {
                     Text(
                         text = state.details.status,
@@ -263,7 +254,10 @@ fun ExpressDetailsScreen(
                     Spacer(Modifier.height(20.dp))
 
                     CompositionLocalProvider(LocalOverscrollFactory provides rememberPlatformOverscrollFactory()) {
-                        LazyColumn(modifier = Modifier.weight(1f).padding(bottom = 24.dp), state = timelineState) {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f).padding(bottom = 24.dp).nestedScroll(scrollConnection),
+                            state = timelineState
+                        ) {
                             items(state.details.traces.size) { index ->
                                 TraceRow(
                                     trace = state.details.traces[index],
