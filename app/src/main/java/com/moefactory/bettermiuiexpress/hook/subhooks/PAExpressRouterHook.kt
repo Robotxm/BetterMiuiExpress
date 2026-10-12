@@ -27,7 +27,7 @@ object PAExpressRouterHook : YukiBaseHooker() {
 
             name = "route"
             parameters(ContextClass, ObjectClass, expressEntryClass)
-        }?.hook {
+        }?.self?.hook {
             replaceAny {
                 val context = args().first().cast<Context>()!!
                 val expressEntry = args(2).any()!!

@@ -30,7 +30,7 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
         PA_EXPRESS_REPOSITOIRY.toClassOrNull()?.resolve()?.firstMethod {
             name = "saveExpress"
             parameters(JavaListClass)
-        }?.hook {
+        }?.self?.hook {
             before {
                 runBlocking {
                     val expressInfoList = args().first().cast<java.util.List<*>>()

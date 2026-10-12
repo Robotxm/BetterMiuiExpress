@@ -1,12 +1,13 @@
 plugins {
     alias libs.plugins.android.application
-    alias libs.plugins.kotlin.android
     alias libs.plugins.kotlin.serialization
     alias libs.plugins.kotlin.parcelize
     alias libs.plugins.ksp
 }
 
 android {
+    compileSdk = 37
+
     buildFeatures {
         viewBinding true
     }
@@ -14,7 +15,6 @@ android {
     defaultConfig {
         applicationId "com.moefactory.bettermiuiexpress"
         minSdk 24
-        compileSdk = 36
         targetSdk 35
         versionCode 31
         versionName "1.7.4"
@@ -50,9 +50,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = '17'
     }
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
@@ -90,6 +87,7 @@ dependencies {
     implementation libs.brv
     implementation libs.retrofit.converter.scalars
     implementation libs.retrofit.core
+    implementation libs.kavaref.android
     implementation libs.kavaref.core
     implementation libs.kavaref.extension
 }
