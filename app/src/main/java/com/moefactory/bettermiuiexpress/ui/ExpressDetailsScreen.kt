@@ -9,6 +9,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.rememberPlatformOverscrollFactory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,17 +27,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -50,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.Velocity
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.model.ExpressDetails
 import com.moefactory.bettermiuiexpress.model.ExpressTrace
@@ -64,11 +76,13 @@ import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.basic.rememberTopAppBarState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.ChevronBackward
 import top.yukonga.miuix.kmp.icon.extended.More
@@ -92,6 +106,60 @@ fun ExpressDetailsScreen(
 
     var showCallDialog by rememberSaveable { mutableStateOf(false) }
 
+    val timelineState = rememberLazyListState()
+
+    val appBarState = rememberTopAppBarState()
+
+    val canCoordinateScroll by remember(timelineState, appBarState, state is ExpressDetailsUiState.Content) {
+        derivedStateOf {
+            state is ExpressDetailsUiState.Content && timelineState.layoutInfo.totalItemsCount > 0 &&
+                (timelineState.canScrollBackward || timelineState.canScrollForward || appBarState.heightOffset < 0f)
+        }
+    }
+
+    val scrollEnabled = rememberUpdatedState(canCoordinateScroll)
+
+    val scrollBehavior = MiuixScrollBehavior(state = appBarState, canScroll = { scrollEnabled.value })
+
+    val pageScrollState = rememberScrollableState { delta ->
+        -timelineState.dispatchRawDelta(-delta)
+    }
+
+    val scrollConnection = remember(appBarState, scrollBehavior) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (!scrollEnabled.value) {
+                    return Offset.Zero
+                }
+
+                val previousOffset = appBarState.heightOffset
+                appBarState.heightOffset += available.y
+                return Offset(0f, appBarState.heightOffset - previousOffset)
+            }
+
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (scrollEnabled.value) {
+                    appBarState.contentOffset += consumed.y
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                if (!scrollEnabled.value) {
+                    return Velocity.Zero
+                }
+                return scrollBehavior.nestedScrollConnection.onPostFling(consumed, available)
+            }
+        }
+    }
+
+    LaunchedEffect(state is ExpressDetailsUiState.Content) {
+        if (state !is ExpressDetailsUiState.Content) {
+            appBarState.heightOffset = 0f
+            appBarState.contentOffset = 0f
+        }
+    }
+
     val backgroundColor = colorResource(R.color.express_details_background)
 
     Scaffold(containerColor = backgroundColor, topBar = {
@@ -99,6 +167,7 @@ fun ExpressDetailsScreen(
             title = summary.companyName,
             modifier = Modifier.combinedClickable(onClick = {}, onLongClick = onCopyDebug),
             color = backgroundColor,
+            scrollBehavior = scrollBehavior,
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(
@@ -155,6 +224,8 @@ fun ExpressDetailsScreen(
                 Column(
                     modifier = Modifier.fillMaxSize().padding(padding)
                         .padding(start = 28.dp, top = 8.dp, end = 28.dp)
+                        .nestedScroll(scrollConnection)
+                        .scrollable(pageScrollState, Orientation.Vertical, enabled = canCoordinateScroll)
                 ) {
                     Text(
                         text = state.details.status,
@@ -192,7 +263,7 @@ fun ExpressDetailsScreen(
                     Spacer(Modifier.height(20.dp))
 
                     CompositionLocalProvider(LocalOverscrollFactory provides rememberPlatformOverscrollFactory()) {
-                        LazyColumn(modifier = Modifier.weight(1f).padding(bottom = 24.dp)) {
+                        LazyColumn(modifier = Modifier.weight(1f).padding(bottom = 24.dp), state = timelineState) {
                             items(state.details.traces.size) { index ->
                                 TraceRow(
                                     trace = state.details.traces[index],
