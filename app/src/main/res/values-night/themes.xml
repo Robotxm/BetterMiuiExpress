@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.BetterMiuiExpress" parent="android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="android:colorAccent">@color/miuiPrimaryColor</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

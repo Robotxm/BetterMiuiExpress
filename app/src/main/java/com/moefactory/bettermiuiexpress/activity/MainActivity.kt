@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.highcapable.yukihookapi.YukiHookAPI
@@ -12,7 +13,8 @@ import com.highcapable.yukihookapi.hook.factory.prefs
 import com.moefactory.bettermiuiexpress.R
 import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
-import com.moefactory.bettermiuiexpress.databinding.ActivityMainBinding
+import com.moefactory.bettermiuiexpress.ui.BetterMiuiExpressTheme
+import com.moefactory.bettermiuiexpress.ui.MainScreen
 import com.moefactory.bettermiuiexpress.ktx.hideLauncherIcon
 import com.moefactory.bettermiuiexpress.ktx.isLauncherIconEnabled
 import com.moefactory.bettermiuiexpress.repository.ExpressActualRepository
@@ -23,42 +25,13 @@ import kotlinx.coroutines.withContext
 import java.util.UUID
 
 @SuppressLint("WorldReadableFiles")
-class MainActivity : BaseActivity<ActivityMainBinding>(false) {
-
-    override val viewBinding by viewBinding(ActivityMainBinding::inflate)
+class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setSupportActionBar(viewBinding.mtToolbar)
-
-        viewBinding.btnGithub.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW).setData("https://github.com/Robotxm/BetterMiuiExpress".toUri()))
-        }
-        viewBinding.btnBlog.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW).setData("https://moefactory.com".toUri()))
-        }
-        viewBinding.mcvYuki.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW).setData("https://github.com/HighCapable/YukiHookAPI".toUri()))
-        }
-
-        viewBinding.tvYukiVersion.text = getString(R.string.yuki_version, YukiHookAPI.VERSION)
-
-        if (YukiHookAPI.Status.isModuleActive) {
-            viewBinding.tvStatus.setText(R.string.active)
-            viewBinding.tvStatusDescription.text = getString(
-                R.string.active_hook_framework_version,
-                Executor.name,
-                Executor.apiLevel
-            )
-            viewBinding.ivStatus.setImageResource(R.drawable.ic_active)
-        } else {
-            viewBinding.tvStatus.setText(R.string.inactive)
-            viewBinding.tvStatusDescription.setText(R.string.inactive_description)
-            viewBinding.ivStatus.setImageResource(R.drawable.ic_inactive)
-        }
-
-        if (YukiHookAPI.Status.isModuleActive) {
+        val moduleActive = YukiHookAPI.Status.isModuleActive
+        if (moduleActive) {
             lifecycleScope.launch(Dispatchers.IO) {
                 val currentGeneratedTrackId = prefs().getString(PREF_KEY_DEVICE_TRACK_ID)
                 if (currentGeneratedTrackId.isNotEmpty()) {
@@ -81,6 +54,20 @@ class MainActivity : BaseActivity<ActivityMainBinding>(false) {
                         hideLauncherIcon()
                     }
                 }
+            }
+        }
+
+        setContent {
+            BetterMiuiExpressTheme {
+                MainScreen(
+                    isModuleActive = moduleActive,
+                    frameworkName = if (moduleActive) Executor.name else "",
+                    frameworkApiLevel = if (moduleActive) Executor.apiLevel else 0,
+                    yukiVersion = YukiHookAPI.VERSION,
+                    onOpenLink = { url ->
+                        startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                    }
+                )
             }
         }
     }
