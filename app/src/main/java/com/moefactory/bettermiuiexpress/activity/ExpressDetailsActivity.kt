@@ -93,7 +93,6 @@ class ExpressDetailsActivity : BaseActivity() {
                         )
                         Toast.makeText(this, R.string.debug_info_copied, Toast.LENGTH_SHORT).show()
                     },
-                    onRetry = { queryExpressDetails(refresh = true) },
                     onDial = { number -> startActivity(Intent(Intent.ACTION_DIAL, "tel:$number".toUri())) }
                 )
             }
@@ -101,11 +100,11 @@ class ExpressDetailsActivity : BaseActivity() {
         queryExpressDetails()
     }
 
-    private fun queryExpressDetails(refresh: Boolean = false) {
+    private fun queryExpressDetails() {
         val summary = miuiExpress ?: return
         viewModel.queryExpressDetails(
             summary.mailNumber, summary.companyCode, summary.phoneNumber,
-            prefs().getString(PREF_KEY_DEVICE_TRACK_ID), refresh
+            prefs().getString(PREF_KEY_DEVICE_TRACK_ID)
         ) { generatedTrackId ->
             prefs().edit { putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId) }
             Toast.makeText(this, R.string.init_success, Toast.LENGTH_SHORT).show()

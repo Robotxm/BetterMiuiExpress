@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -82,7 +81,6 @@ fun ExpressDetailsScreen(
     onBack: () -> Unit,
     onJump: () -> Unit,
     onCopyDebug: () -> Unit,
-    onRetry: () -> Unit,
     onDial: (String) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -243,32 +241,25 @@ fun ExpressDetailsScreen(
             }
 
             ExpressDetailsUiState.Empty, is ExpressDetailsUiState.Error -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
-                ) {
-                    item {
-                        Image(painterResource(R.drawable.app_express_detail_list_empty),
-                            contentDescription = null, modifier = Modifier.size(100.dp))
-                    }
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Image(
+                            painter = painterResource(R.drawable.app_express_detail_list_empty),
+                            contentDescription = null
+                        )
 
-                    item {
+                        Spacer(Modifier.height(17.dp))
+
                         Text(
-                            stringResource(if (state is ExpressDetailsUiState.Error)
-                                R.string.express_load_failed else R.string.app_express_detail_list_empty_text),
+                            text = stringResource(R.string.app_express_detail_list_empty_text),
                             textAlign = TextAlign.Center,
-                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary
+                            color = colorResource(R.color.app_express_detail_empty_text_color),
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                platformStyle = PlatformTextStyle(includeFontPadding = true)
+                            )
                         )
                     }
-
-                    item {
-                        Text(stringResource(R.string.express_details_mail_number, summary.mailNumber),
-                            style = MiuixTheme.textStyles.footnote1)
-                    }
-
-                    item { TextButton(stringResource(R.string.retry), onClick = onRetry) }
                 }
             }
         }
@@ -382,7 +373,7 @@ private fun ExpressDetailsPreview() {
             ExpressDetailsUiState.Content(ExpressDetails("快递 100", "派送中", listOf(
                 ExpressTrace("2026-10-13 10:00:00", "10-13", "10:00", "快件正在派送，联系快递员 13800138000"),
                 ExpressTrace("2026-10-12 10:00:00", "10-12", "10:00", "快件已到达转运中心")
-            ))), true, {}, {}, {}, {}, {}
+            ))), true, {}, {}, {}, {}
         )
     }
 }
