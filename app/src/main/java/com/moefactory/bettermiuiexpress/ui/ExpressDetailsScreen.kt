@@ -1,14 +1,9 @@
 package com.moefactory.bettermiuiexpress.ui
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberPlatformOverscrollFactory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,8 +33,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -72,6 +67,7 @@ import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
@@ -275,26 +271,23 @@ fun ExpressDetailsScreen(
             }
 
             ExpressDetailsUiState.Loading -> {
-                val transition = rememberInfiniteTransition(label = "expressLoading")
-
-                val rotation by transition.animateFloat(
-                    initialValue = 0f,
-                    targetValue = 1440f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(durationMillis = 4000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Restart
-                    ),
-                    label = "expressLoadingRotation"
-                )
+                val indicatorSize = 24.dp
+                val darkTheme = isSystemInDarkTheme()
+                // 原 XML 的圆环厚度和圆点半径均为 6，浅色/深色 viewport 分别为 66/60。
+                val indicatorStrokeWidth = indicatorSize * 6 / if (darkTheme) 60 else 66
+                val indicatorDiameter = indicatorSize * 60 / if (darkTheme) 60 else 66
 
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(
-                            painter = painterResource(R.drawable.miuix_sbl_loading_progress_circle),
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp).rotate(rotation)
-                                .semantics { progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate }
-                        )
+                        Box(Modifier.size(indicatorSize), contentAlignment = Alignment.Center) {
+                            InfiniteProgressIndicator(
+                                modifier = Modifier.semantics { progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate },
+                                color = (if (darkTheme) Color.White else Color.Black).copy(alpha = 0.8f),
+                                size = indicatorDiameter,
+                                strokeWidth = indicatorStrokeWidth,
+                                orbitingDotSize = indicatorStrokeWidth
+                            )
+                        }
 
                         Spacer(Modifier.height(16.dp))
 
