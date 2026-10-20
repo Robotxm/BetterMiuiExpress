@@ -1,6 +1,5 @@
 package com.moefactory.bettermiuiexpress.activity
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.ActivityOptions
@@ -18,10 +17,9 @@ import androidx.core.content.IntentCompat
 import androidx.core.net.toUri
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.highcapable.yukihookapi.hook.factory.prefs
+import com.moefactory.bettermiuiexpress.ktx.deviceTrackId
 import com.moefactory.bettermiuiexpress.BuildConfig
 import com.moefactory.bettermiuiexpress.R
-import com.moefactory.bettermiuiexpress.base.app.PREF_KEY_DEVICE_TRACK_ID
 import com.moefactory.bettermiuiexpress.base.ui.BaseActivity
 import com.moefactory.bettermiuiexpress.model.MiuiExpress
 import com.moefactory.bettermiuiexpress.model.ExpressInfoJumpListWrapper
@@ -29,7 +27,6 @@ import com.moefactory.bettermiuiexpress.ui.BetterMiuiExpressTheme
 import com.moefactory.bettermiuiexpress.ui.ExpressDetailsScreen
 import com.moefactory.bettermiuiexpress.viewmodel.ExpressDetailsViewModel
 
-@SuppressLint("WorldReadableFiles")
 class ExpressDetailsActivity : BaseActivity() {
     companion object {
         private const val ACTION_GO_TO_DETAILS = "com.moefactory.bettermiuiexpress.details"
@@ -133,9 +130,9 @@ class ExpressDetailsActivity : BaseActivity() {
         val summary = miuiExpress ?: return
         viewModel.queryExpressDetails(
             summary.mailNumber, summary.companyCode, summary.phoneNumber,
-            prefs().getString(PREF_KEY_DEVICE_TRACK_ID)
+            deviceTrackId
         ) { generatedTrackId ->
-            prefs().edit { putString(PREF_KEY_DEVICE_TRACK_ID, generatedTrackId) }
+            deviceTrackId = generatedTrackId
             Toast.makeText(this, R.string.init_success, Toast.LENGTH_SHORT).show()
         }
     }

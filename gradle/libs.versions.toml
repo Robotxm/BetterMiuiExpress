@@ -16,8 +16,8 @@ miuix = "0.9.4"
 okhttp = "5.5.0"
 retrofit = "3.0.0"
 timelineview = "1.2.2"
-xposed = "82"
-yukihookapi = "1.3.2"
+libxposed = "102.0.0"
+yukihook = "1.5.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
@@ -47,9 +47,12 @@ retrofit-converter-kotlinx-serialization = { module = "com.squareup.retrofit2:co
 retrofit-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
 retrofit-core = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 timelineview-compose = { module = "com.github.vipulasri:timelineview-compose", version.ref = "timelineview" }
-xposed-api = { module = "de.robv.android.xposed:api", version.ref = "xposed" }
-yukihookapi-api = { module = "com.highcapable.yukihookapi:api", version.ref = "yukihookapi" }
-yukihookapi-ksp-xposed = { module = "com.highcapable.yukihookapi:ksp-xposed", version.ref = "yukihookapi" }
+libxposed-api = { module = "io.github.libxposed:api", version.ref = "libxposed" }
+yukihook-bom = { module = "com.highcapable.yukihookapi:yukihook-bom", version.ref = "yukihook" }
+yukihook-core = { module = "com.highcapable.yukihookapi:yukihook-core" }
+yukihook-compiler = { module = "com.highcapable.yukihookapi:yukihook-compiler" }
+yukihook-extension-kavaref = { module = "com.highcapable.yukihookapi:yukihook-extension-kavaref" }
+yukihook-runtime-libxposed = { module = "com.highcapable.yukihookapi:yukihook-runtime-libxposed" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

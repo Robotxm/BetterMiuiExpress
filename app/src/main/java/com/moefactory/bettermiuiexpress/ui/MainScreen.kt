@@ -120,7 +120,7 @@ fun MainScreen(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(), insideMargin = PaddingValues(16.dp),
-                    onClick = { onOpenLink("https://github.com/HighCapable/YukiHookAPI") }
+                    onClick = { onOpenLink("https://github.com/HighCapable/YukiHook") }
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -157,5 +157,5 @@ fun MainScreen(
 @Preview(uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MainScreenPreview() {
-    BetterMiuiExpressTheme { MainScreen(false, "LSPosed", 100, "1.3.2", {}) }
+    BetterMiuiExpressTheme { MainScreen(false, "LSPosed", 102, "1.5.0", {}) }
 }

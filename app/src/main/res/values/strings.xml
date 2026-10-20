@@ -5,8 +5,9 @@
     <string name="save_successfully">保存成功</string>
     <string name="unexpected_error">未知错误</string>
     <string name="copyright">MIUI/HyperOS 快递组件便捷小工具，用于禁止强制跳转第三方快递应用。\n如需跳转其他应用查看取件码，请通过详情页右上角进入。\n\n本模块在 GPLv3 许可下开放源代码，详情请转到 GitHub 查看。\n\nCopyright © 2021–2026 MoeFactory\nAll Rights Reserved.</string>
-    <string name="yuki">此模块使用 YukiHookAPI 构建</string>
-    <string name="yuki_version">YukiHookAPI 版本: %1$s</string>
+    <string name="module_description">Prevent Express entry in MIUI Personal Assistant calling Alibaba apps.</string>
+    <string name="yuki">此模块使用 YukiHook 构建</string>
+    <string name="yuki_version">YukiHook 版本: %1$s</string>
     <string name="inactive">模块未激活</string>
     <string name="inactive_description">请检查是否在 Hook 框架中启用了本模块</string>
     <string name="active">模块已激活</string>
@@ -16,7 +17,7 @@
     <string name="jump_to_third_party_app">转到第三方应用</string>
     <string name="app_express_detail_list_empty_text">暂无运单信息，或数据同步延迟，请稍后再试\n如有需求，可自行前往相应快递官网查询</string>
     <string name="express_state_unknown">暂无信息</string>
-    <string name="express_details_title">我的快递</string>
+    <string name="express_details_title">智能助理</string>
     <string name="express_loading">加载中</string>
     <string name="debug_info_copied">成功复制调试信息</string>
     <string name="customer_field_hint">快递 100 公司编码 customer</string>

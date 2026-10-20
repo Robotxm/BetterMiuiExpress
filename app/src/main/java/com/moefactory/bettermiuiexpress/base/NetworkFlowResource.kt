@@ -1,6 +1,6 @@
 package com.moefactory.bettermiuiexpress.base
 
-import com.highcapable.yukihookapi.hook.log.loggerE
+import com.highcapable.yukihookapi.hook.log.YLog
 import kotlinx.coroutines.flow.flow
 
 @Suppress("FunctionName")
@@ -12,7 +12,7 @@ inline fun <RequestType> NetworkBoundResource(
         val result = fetch()
         Result.success(result)
     } catch (throwable: Throwable) {
-        loggerE(e = throwable)
+        YLog.error(e = throwable)
         onFetchFailed(throwable)
         Result.failure(throwable)
     }

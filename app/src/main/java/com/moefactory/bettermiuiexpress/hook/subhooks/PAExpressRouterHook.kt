@@ -2,6 +2,8 @@ package com.moefactory.bettermiuiexpress.hook.subhooks
 
 import android.content.Context
 import com.highcapable.kavaref.KavaRef.Companion.resolve
+import com.highcapable.yukihookapi.extension.kavaref.hook
+import com.highcapable.yukihookapi.extension.kavaref.toClassOrNull
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.moefactory.bettermiuiexpress.activity.ExpressDetailsActivity
 import com.moefactory.bettermiuiexpress.base.app.PA_EXPRESS_ENTRY
@@ -21,35 +23,34 @@ object PAExpressRouterHook : YukiBaseHooker() {
 
     override fun onHook() {
         val paExpressRouterClass = PA_EXPRESS_ROUTER.toClassOrNull()
+        val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return
 
         paExpressRouterClass?.resolve()?.firstMethod {
-            val expressEntryClass = PA_EXPRESS_ENTRY.toClassOrNull() ?: return
-
             name = "route"
             parameters(ContextClass, ObjectClass, expressEntryClass)
-        }?.self?.hook {
-            replaceAny {
-                val context = args().first().cast<Context>()!!
-                val expressEntry = args(2).any()!!
+        }?.hook {
+            intercept {
+                val context = firstArg().get<Context>() ?: return@intercept null
+                val expressEntry = arg(2).get<Any>() ?: return@intercept null
                 val expressEntryWrapper = expressEntry.toExpressEntryWrapper()
 
                 if (jumpToDetailsActivity(context, expressEntryWrapper)) {
-                    return@replaceAny null
+                    return@intercept null
                 } else if (expressEntryWrapper.shouldUseNativeUI() && expressEntryWrapper.isJingDong) {
                     // From new versions of PA, details of packages from JingDong will be display in JD app by default, which is unexpected
                     // Here we just intercept it
-                    args(1).any()?.let { arg1 ->
+                    arg(1).get<Any>()?.let { arg1 ->
                         paExpressRouterClass.resolve().firstMethod {
                             name = "gotoNative"
                             parameters(ContextClass, ObjectClass, expressEntry::class.java)
                         }.invoke(context, arg1, expressEntry)
 
-                        return@replaceAny null
+                        return@intercept null
                     }
                 }
 
                 // Other details will be processed normally
-                return@replaceAny invokeOriginal(*args)
+                return@intercept invokeOriginal(*args)
             }
         }
     }

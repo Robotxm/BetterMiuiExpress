@@ -1,8 +1,9 @@
 package com.moefactory.bettermiuiexpress.base.app
 
-import com.highcapable.yukihookapi.hook.factory.prefs
+import com.highcapable.yukihookapi.YukiHook
 import com.highcapable.yukihookapi.hook.xposed.application.ModuleApplication
 import com.moefactory.bettermiuiexpress.ktx.hideLauncherIcon
+import com.moefactory.bettermiuiexpress.ktx.deviceTrackId
 import com.moefactory.bettermiuiexpress.ktx.isLauncherIconEnabled
 
 class BetterMiuiExpress : ModuleApplication() {
@@ -10,8 +11,16 @@ class BetterMiuiExpress : ModuleApplication() {
     override fun onCreate() {
         super.onCreate()
 
-        if (isLauncherIconEnabled() && prefs().getString(PREF_KEY_DEVICE_TRACK_ID).isNotEmpty()) {
-            hideLauncherIcon()
+        YukiHook.Status.observeFrameworkService { available ->
+            if (available) {
+                val trackId = deviceTrackId
+                if (trackId.isNotEmpty()) {
+                    deviceTrackId = trackId
+                    if (isLauncherIconEnabled()) {
+                        hideLauncherIcon()
+                    }
+                }
+            }
         }
     }
 }

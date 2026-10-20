@@ -1,6 +1,8 @@
 package com.moefactory.bettermiuiexpress.hook.subhooks
 
 import com.highcapable.kavaref.KavaRef.Companion.resolve
+import com.highcapable.yukihookapi.extension.kavaref.hook
+import com.highcapable.yukihookapi.extension.kavaref.toClassOrNull
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
 import com.moefactory.bettermiuiexpress.base.app.PA_EXPRESS_INFO_DETAIL
 import com.moefactory.bettermiuiexpress.base.app.PA_EXPRESS_REPOSITOIRY
@@ -24,17 +26,17 @@ import java.util.Locale
 object PAExpressRepositoryHook : YukiBaseHooker() {
 
     private val deviceTrackId: String
-        get() = prefs.getString(PREF_KEY_DEVICE_TRACK_ID)
+        get() = preferences.getString(PREF_KEY_DEVICE_TRACK_ID)
 
     override fun onHook() {
         PA_EXPRESS_REPOSITOIRY.toClassOrNull()?.resolve()?.firstMethod {
             name = "saveExpress"
             parameters(JavaListClass)
-        }?.self?.hook {
+        }?.hook {
             before {
                 runBlocking {
-                    val expressInfoList = args().first().cast<java.util.List<*>>()
-                        ?.map { it.toExpressInfoWrapper() }
+                    val expressInfoList = firstArg().get<List<*>>()
+                        ?.mapNotNull { it?.toExpressInfoWrapper() }
                         ?.filter { !it.isXiaomiOrJingDong } // Skip packages from Xiaomi and JingDong
                         ?: return@runBlocking
                     for (expressInfoWrapper in expressInfoList) {
