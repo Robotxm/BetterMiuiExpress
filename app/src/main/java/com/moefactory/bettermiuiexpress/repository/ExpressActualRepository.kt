@@ -22,6 +22,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.X509TrustManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -39,6 +40,7 @@ object ExpressActualRepository {
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
+            .callTimeout(30, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .addInterceptor(KuaiDi100Interceptor())
             .apply {
@@ -91,28 +93,32 @@ object ExpressActualRepository {
         })
     }
 
-    suspend fun queryCompanyActual(mailNumber: String) = suspendCoroutine<List<KuaiDi100Company>> {
+    suspend fun queryCompanyActual(mailNumber: String) = suspendCoroutine<List<KuaiDi100Company>> { continuation ->
         kuaiDi100Api.queryExpressCompany(mailNumber).enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>, response: Response<String>) {
-                val body = response.body()
-                when {
-                    // Normal
-                    body?.startsWith("[") == true -> {
-                        it.resume(jsonParser.decodeFromString(body))
+                continuation.resumeWith(runCatching {
+                    val body = response.body()
+                    when {
+                        // Normal
+                        body?.startsWith("[") == true -> {
+                            jsonParser.decodeFromString<List<KuaiDi100Company>>(body)
+                        }
+                        // Error
+                        body?.startsWith("{") == true -> {
+                            val message = jsonParser.parseToJsonElement(body)
+                                .jsonObject["message"]?.jsonPrimitive?.content
+                            throw Exception(message)
+                        }
+                        // Exception
+                        else -> {
+                            throw Exception("Unexpected response: $response")
+                        }
                     }
-                    // Error
-                    body?.startsWith("{") == true -> {
-                        val message = jsonParser.parseToJsonElement(body)
-                            .jsonObject["message"]?.jsonPrimitive?.content
-                        it.resumeWithException(Exception(message))
-                    }
-                    // Exception
-                    else -> it.resumeWithException(Exception("Unexpected response: $response"))
-                }
+                })
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
-                it.resumeWithException(t)
+                continuation.resumeWithException(t)
             }
         })
     }
