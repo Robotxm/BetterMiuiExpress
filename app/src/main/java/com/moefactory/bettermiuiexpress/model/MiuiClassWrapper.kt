@@ -2,6 +2,7 @@ package com.moefactory.bettermiuiexpress.model
 
 import android.os.Parcelable
 import com.moefactory.bettermiuiexpress.ktx.BooleanPrimitiveType
+import com.moefactory.bettermiuiexpress.ktx.JavaListClass
 import com.moefactory.bettermiuiexpress.ktx.JavaStringClass
 import kotlinx.parcelize.Parcelize
 
@@ -31,6 +32,11 @@ class ExpressInfoWrapper(private val expressInfoObject: Any) {
         get() = expressInfoClass.getField("companyCode").get(expressInfoObject) as String
     val orderNumber: String
         get() = expressInfoClass.getField("orderNumber").get(expressInfoObject) as String
+    var stateNum: Int
+        get() = expressInfoClass.getField("stateNum").getInt(expressInfoObject)
+        set(value) {
+            expressInfoClass.getField("stateNum").setInt(expressInfoObject, value)
+        }
     var clickDisappear: Boolean
         get() = expressInfoClass.getMethod("isClickDisappear").invoke(expressInfoObject) as Boolean
         set(value) {
@@ -80,7 +86,7 @@ data class ExpressInfoJumpListWrapper(
     }
 }
 
-class ExpressEntryWrapper(private val expressEntryObject: Any) {
+class ExpressEntryWrapper(internal val expressEntryObject: Any) {
 
     private val expressEntryClass = expressEntryObject.javaClass
 
@@ -90,8 +96,51 @@ class ExpressEntryWrapper(private val expressEntryObject: Any) {
         get() = expressEntryClass.getField("companyName").get(expressEntryObject) as String
     val orderNumber: String
         get() = expressEntryClass.getField("orderNumber").get(expressEntryObject) as String
-    val phone: String?
-        get() = expressEntryClass.getField("phone").get(expressEntryObject) as? String
+    var phone: String?
+        get() = expressEntryClass.getMethod("getPhone").invoke(expressEntryObject) as? String
+        set(value) {
+            expressEntryClass.getMethod("setPhone", JavaStringClass).invoke(expressEntryObject, value)
+        }
+    var key: String?
+        get() = expressEntryClass.getMethod("getKey").invoke(expressEntryObject) as? String
+        set(value) {
+            expressEntryClass.getMethod("setKey", JavaStringClass).invoke(expressEntryObject, value)
+        }
+    var remark: String?
+        get() = expressEntryClass.getMethod("getRemark").invoke(expressEntryObject) as? String
+        set(value) {
+            expressEntryClass.getMethod("setRemark", JavaStringClass).invoke(expressEntryObject, value)
+        }
+    var state: Int
+        get() = expressEntryClass.getMethod("getState").invoke(expressEntryObject) as Int
+        set(value) {
+            expressEntryClass.getMethod("setState", Int::class.javaPrimitiveType).invoke(expressEntryObject, value)
+        }
+    var latestTime: String?
+        get() = expressEntryClass.getMethod("getLatestTime").invoke(expressEntryObject) as? String
+        set(value) {
+            expressEntryClass.getMethod("setLatestTime", JavaStringClass).invoke(expressEntryObject, value)
+        }
+    var latestDetail: String?
+        get() = expressEntryClass.getMethod("getLatestDetail").invoke(expressEntryObject) as? String
+        set(value) {
+            expressEntryClass.getMethod("setLatestDetail", JavaStringClass).invoke(expressEntryObject, value)
+        }
+    var details: List<Any>?
+        get() = expressEntryClass.getMethod("getDetails").invoke(expressEntryObject) as? List<Any>
+        set(value) {
+            expressEntryClass.getMethod("setDetails", JavaListClass).invoke(expressEntryObject, value)
+        }
+    var clickDisappear: Boolean
+        get() = expressEntryClass.getMethod("isClickDisappear").invoke(expressEntryObject) as Boolean
+        set(value) {
+            expressEntryClass.getMethod("setClickDisappear", BooleanPrimitiveType).invoke(expressEntryObject, value)
+        }
+    var displayOnCard: Boolean
+        get() = expressEntryClass.getMethod("isDisplayOnCard").invoke(expressEntryObject) as Boolean
+        set(value) {
+            expressEntryClass.getMethod("setDisplayOnCard", BooleanPrimitiveType).invoke(expressEntryObject, value)
+        }
     val jumpList: List<*>?
         get() = runCatching { expressEntryClass.getMethod("getJumpList").invoke(expressEntryObject) as List<*>? }.getOrNull()
     val uris: List<*>? // For older versions compatible
