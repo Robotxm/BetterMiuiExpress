@@ -9,14 +9,14 @@ import java.util.UUID
 @Serializable
 open class KuaiDi100BaseRequestParam(
     @SerialName("appid") val appId: String = "com.Kingdee.Express",
-    val versionCode: Int = 852,
+    val versionCode: Int = 924,
     @SerialName("os_version") val osVersion: String = "android15",
     @SerialName("os_name") val osName: String = "2304FPN6DC",
     @SerialName("t") val time: String = System.currentTimeMillis().toString(),
     @SerialName("tra") open val trackId: String,
-    @SerialName("uchannel") val userChannel: String = "null",
+    @SerialName("uchannel") val userChannel: String = "default",
     @SerialName("nt") val networkType: String = "wifi",
-    @SerialName("apiversion") val apiVersion: Int = 31,
+    @SerialName("apiversion") val apiVersion: Int = 32,
     val deviceId: String = UUID.randomUUID().toString().replace("-", "").let { it.substring(0..(it.length / 2)) },
 )
 
@@ -26,7 +26,7 @@ data class KuaiDi100ExpressDetailsRequestParam(
     @SerialName("com") val companyCode: String,
     override val trackId: String,
     val type: String = "detail",
-    val phone: String? = null,
+    val phone: String = "",
 ) : KuaiDi100BaseRequestParam(trackId = trackId)
 
 @Serializable

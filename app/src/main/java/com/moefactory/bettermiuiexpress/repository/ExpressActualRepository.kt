@@ -124,7 +124,12 @@ object ExpressActualRepository {
     }
 
     suspend fun queryExpressDetailsFromKuaiDi100Actual(companyCode: String, mailNumber: String, phoneNumber: String?, trackId: String) = suspendCoroutine {
-        val params = KuaiDi100ExpressDetailsRequestParam(phone = phoneNumber, mailNumber = mailNumber, companyCode = companyCode, trackId = trackId)
+        val params = KuaiDi100ExpressDetailsRequestParam(
+            phone = phoneNumber?.takeUnless { it == "null" }.orEmpty(),
+            mailNumber = mailNumber,
+            companyCode = companyCode,
+            trackId = trackId
+        )
         val paramsString = jsonParser.encodeToString(params)
 
         kuaiDi100Api.queryExpressDetails(
