@@ -3,6 +3,7 @@ package com.moefactory.bettermiuiexpress.hook.subhooks
 import android.content.Context
 import android.os.Looper
 import com.highcapable.kavaref.KavaRef.Companion.resolve
+import com.highcapable.kavaref.extension.toClass
 import com.highcapable.yukihookapi.extension.kavaref.hook
 import com.highcapable.yukihookapi.extension.kavaref.toClassOrNull
 import com.highcapable.yukihookapi.hook.entity.YukiBaseHooker
@@ -34,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import com.highcapable.kavaref.extension.makeAccessible
 
 // Enrich host refreshes and persist parcels queried from the host search page.
 object PAExpressRepositoryHook : YukiBaseHooker() {
@@ -253,6 +255,62 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
     }
 
     private fun hookCache(cache: PAExpressCache, repositoryClass: Class<*>) {
+        runCatching {
+            val classLoader = repositoryClass.classLoader!!
+            val widgetItemClass = "com.miui.personalassistant.service.express.widget.model.ExpressItem".toClass(classLoader, false)
+            val widgetContextField = widgetItemClass.getDeclaredField("mContext").apply { makeAccessible() }
+            val totalListField = widgetItemClass.getDeclaredField("mTotalList").apply { makeAccessible() }
+            val setupExpressList = widgetItemClass.getDeclaredMethod("setupExpressList", JavaListClass).apply { makeAccessible() }
+            val sortExpressEntries = "com.miui.personalassistant.service.express.util.ExpressUtils".toClass(classLoader, false)
+                .getMethod("sortExpressEntries", JavaListClass)
+
+            widgetItemClass.getDeclaredMethod("fetchDisplayedList").hook {
+                intercept {
+                    synchronized(cache.mutationLock) {
+                        val original = invokeOriginal(*args)
+                        runCatching {
+                            val displayed = original as? List<*> ?: return@runCatching original
+                            val context = widgetContextField.get(instance) as? Context ?: return@runCatching original
+                            // The host has already loaded its 30-day cache. Do not change the server's order-number index.
+                            val localEntries = totalListField.get(instance) as? List<*> ?: return@runCatching original
+                            val merged = displayed.filterNotNull().toMutableList()
+                            val seenOrders = merged.mapTo(mutableSetOf()) { it.toExpressEntryWrapper().orderNumber.lowercase(Locale.ROOT) }
+                            var changed = false
+                            for (value in localEntries.filterNotNull()) {
+                                val entry = value.toExpressEntryWrapper()
+                                val orderNumber = entry.orderNumber.lowercase(Locale.ROOT)
+                                if (orderNumber.isBlank() || orderNumber in seenOrders || !entry.displayOnCard ||
+                                    cache.isDeleted(context, entry.orderNumber)
+                                ) {
+                                    continue
+                                }
+
+                                // Reuse the host's state/date rules per entry, without its three-entry fallback limit.
+                                val eligible = setupExpressList.invoke(instance, listOf(value)) as? List<*>
+                                if (eligible.isNullOrEmpty()) {
+                                    continue
+                                }
+                                merged.add(value)
+                                seenOrders.add(orderNumber)
+                                changed = true
+                            }
+                            if (changed) {
+                                // Let recent local parcels compete for the widget's limited rows using the host's ordering.
+                                sortExpressEntries.invoke(null, merged)
+                                merged
+                            } else {
+                                original
+                            }
+                        }.onFailure {
+                            YLog.warn("Failed to merge local express into widget; keeping host list", e = it)
+                        }.getOrDefault(original)
+                    }
+                }
+            }
+        }.onFailure {
+            YLog.warn("Host widget list API unavailable; local express widget merge is disabled", e = it)
+        }
+
         cache.deleteMethod.hook {
             intercept {
                 synchronized(cache.mutationLock) {
