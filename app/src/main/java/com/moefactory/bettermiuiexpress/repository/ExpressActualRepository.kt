@@ -38,7 +38,7 @@ object ExpressActualRepository {
         }
     }
 
-    private val okHttpClient by lazy {
+    private val okHttpClientDelegate = lazy {
         OkHttpClient.Builder()
             .callTimeout(30, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
@@ -53,6 +53,21 @@ object ExpressActualRepository {
             }
             .cookieJar(MemoryCookieJar())
             .build()
+    }
+
+    private val okHttpClient by okHttpClientDelegate
+
+    fun isIdle(): Boolean {
+        return !okHttpClientDelegate.isInitialized() ||
+            (okHttpClient.dispatcher.runningCallsCount() == 0 && okHttpClient.dispatcher.queuedCallsCount() == 0)
+    }
+
+    fun dispose() {
+        if (okHttpClientDelegate.isInitialized()) {
+            okHttpClient.dispatcher.cancelAll()
+            okHttpClient.dispatcher.executorService.shutdown()
+            okHttpClient.connectionPool.evictAll()
+        }
     }
 
     private val retrofit by lazy {

@@ -31,22 +31,33 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 // Enrich host refreshes and persist parcels queried from the host search page.
 object PAExpressRepositoryHook : YukiBaseHooker() {
 
-    private val refreshExecutor by lazy {
+    private val refreshExecutorDelegate = lazy {
         Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "BetterMiuiExpress-refresh")
         }
     }
 
-    private val storageExecutor by lazy {
+    private val storageExecutorDelegate = lazy {
         Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "BetterMiuiExpress-storage")
         }
     }
+
+    private val refreshExecutor by refreshExecutorDelegate
+    private val storageExecutor by storageExecutorDelegate
+    private val workLock = Any()
+    private var pendingTasks = 0
+    private val pendingSearchRequests = mutableSetOf<SearchRequest>()
+
+    @Volatile
+    private var disposed = false
 
     private val deviceTrackId: String
         get() = preferences.getString(PREF_KEY_DEVICE_TRACK_ID)
@@ -70,6 +81,50 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
         val placeholder: Boolean = false
     )
 
+    fun canReload(): Boolean = synchronized(workLock) {
+        // A search callback can enqueue a worker before it completes; inspect both under the same lock.
+        val networkIdle = ExpressActualRepository.isIdle()
+        val idle = pendingTasks == 0 && pendingSearchRequests.isEmpty() && runningQueries.isEmpty() && networkIdle
+        if (!idle) {
+            YLog.warn(
+                "Hot reload refused: pendingTasks=$pendingTasks, pendingSearchCallbacks=${pendingSearchRequests.size}, " +
+                    "runningQueries=${runningQueries.size}, networkIdle=$networkIdle"
+            )
+        }
+        idle
+    }
+
+    fun dispose() {
+        disposed = true
+        // Do not create unused executors just to shut them down.
+        val executors = listOf(refreshExecutorDelegate, storageExecutorDelegate).filter { it.isInitialized() }.map { it.value }
+        executors.forEach { it.shutdown() }
+        executors.forEach {
+            check(it.awaitTermination(1, TimeUnit.SECONDS)) { "Express worker did not stop" }
+        }
+        ExpressActualRepository.dispose()
+        hostCache = null
+        contextField = null
+        runningQueries.clear()
+        synchronized(workLock) { pendingSearchRequests.clear() }
+    }
+
+    private fun ExecutorService.executeTracked(block: () -> Unit) {
+        synchronized(workLock) { pendingTasks++ }
+        try {
+            execute {
+                try {
+                    block()
+                } finally {
+                    synchronized(workLock) { pendingTasks-- }
+                }
+            }
+        } catch (exception: Exception) {
+            synchronized(workLock) { pendingTasks-- }
+            throw exception
+        }
+    }
+
     override fun onHook() {
         val repositoryClass = PA_EXPRESS_REPOSITOIRY.toClassOrNull() ?: return
         hostCache = runCatching {
@@ -90,7 +145,7 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
                 intercept {
                     val repository = instance
                     val responseArgs = args.copyOf()
-                    refreshExecutor.execute {
+                    refreshExecutor.executeTracked {
                         val seenOrders = mutableSetOf<String>()
                         refreshOrders.set(seenOrders)
                         try {
@@ -117,7 +172,7 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
         }?.hook {
             after {
                 repositoryContext(instance)?.let { context ->
-                    refreshExecutor.execute { refreshLocalEntries(context) }
+                    refreshExecutor.executeTracked { refreshLocalEntries(context) }
                 }
             }
         }
@@ -138,7 +193,7 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
                 } finally {
                     refreshOrders.remove()
                     if (context != null) {
-                        refreshExecutor.execute { refreshLocalEntries(context, seenOrders) }
+                        refreshExecutor.executeTracked { refreshLocalEntries(context, seenOrders) }
                     }
                 }
             }
@@ -190,7 +245,7 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
                         serverWrite.set(previousWrite)
                     }
                     if (refreshOrders.get() == null && context != null) {
-                        refreshExecutor.execute { refreshLocalEntries(context, seenOrders) }
+                        refreshExecutor.executeTracked { refreshLocalEntries(context, seenOrders) }
                     }
                 }
             }
@@ -247,13 +302,14 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
         if (singleRequestMethod != null) {
             val listenerInterface = singleRequestMethod.parameterTypes[3]
             singleRequestMethod.hook {
-                before {
+                intercept {
                     if (arg(2).get<String>() != "2") {
-                        return@before
+                        return@intercept invokeOriginal(*args)
                     }
+                    var pendingRequest: SearchRequest? = null
                     runCatching {
-                        val entry = firstArg().get<Any>()?.toExpressEntryWrapper() ?: return@before
-                        val listener = arg(3).get<Any>() ?: return@before
+                        val entry = firstArg().get<Any>()?.toExpressEntryWrapper() ?: return@runCatching
+                        val listener = arg(3).get<Any>() ?: return@runCatching
                         val orderNumber = entry.orderNumber
                         val request = SearchRequest(orderNumber, cache.invalidate(orderNumber))
                         val proxy = Proxy.newProxyInstance(listenerInterface.classLoader, arrayOf(listenerInterface)) { proxy, method, arguments ->
@@ -265,7 +321,7 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
                                 }
                             }
                             val previous = searchResponse.get()
-                            if (method.name == "success") {
+                            if (!disposed && method.name == "success") {
                                 searchResponse.set(request)
                             }
                             try {
@@ -280,10 +336,22 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
                                         searchResponse.set(previous)
                                     }
                                 }
+                                synchronized(workLock) { pendingSearchRequests.remove(request) }
                             }
                         }
+                        pendingRequest = request
+                        synchronized(workLock) { pendingSearchRequests.add(request) }
                         arg(3).set(proxy)
-                    }.onFailure { YLog.warn("Failed to track host search request", e = it) }
+                    }.onFailure {
+                        synchronized(workLock) { pendingSearchRequests.remove(pendingRequest) }
+                        YLog.warn("Failed to track host search request", e = it)
+                    }
+                    try {
+                        invokeOriginal(*args)
+                    } catch (exception: Throwable) {
+                        synchronized(workLock) { pendingSearchRequests.remove(pendingRequest) }
+                        throw exception
+                    }
                 }
             }
         } else {
@@ -316,7 +384,7 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
                             entry to cache.invalidate(entry.orderNumber)
                         }
                     }
-                    storageExecutor.execute {
+                    storageExecutor.executeTracked {
                         runCatching {
                             val saved = synchronized(cache.mutationLock) {
                                 if (cache.intentRevision(entry.orderNumber) != revision) {
@@ -341,7 +409,7 @@ object PAExpressRepositoryHook : YukiBaseHooker() {
                             }
                             if (saved) {
                                 cache.notifyChanged(context)
-                                refreshExecutor.execute { refreshLocalEntries(context, onlyOrder = entry.orderNumber) }
+                                refreshExecutor.executeTracked { refreshLocalEntries(context, onlyOrder = entry.orderNumber) }
                             }
                         }.onFailure { YLog.error("Failed to persist searched express", e = it) }
                     }

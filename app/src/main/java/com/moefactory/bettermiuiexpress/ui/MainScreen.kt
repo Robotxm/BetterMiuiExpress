@@ -37,6 +37,10 @@ fun MainScreen(
     frameworkName: String,
     frameworkApiLevel: Int,
     yukiVersion: String,
+    reloadAvailable: Boolean,
+    reloading: Boolean,
+    reloadStatus: String,
+    onReload: () -> Unit,
     onOpenLink: (String) -> Unit
 ) {
     val scrollBehavior = MiuixScrollBehavior()
@@ -69,7 +73,7 @@ fun MainScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 stringResource(if (isModuleActive) R.string.active else R.string.inactive),
-                                style = MiuixTheme.textStyles.main.copy(
+                                style = MiuixTheme.textStyles.headline1.copy(
                                     fontWeight = FontWeight.Medium
                                 )
                             )
@@ -82,6 +86,44 @@ fun MainScreen(
                                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                             )
                         }
+                    }
+                }
+            }
+
+            if (isModuleActive) {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth(), insideMargin = PaddingValues(16.dp)) {
+                        Text(
+                            stringResource(R.string.module_reload_title),
+                            style = MiuixTheme.textStyles.headline1.copy(
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(if (reloadAvailable) R.string.module_reload_description else R.string.module_reload_unavailable),
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary
+                        )
+
+                        if (reloadStatus.isNotEmpty()) {
+                            Spacer(Modifier.height(8.dp))
+
+                            Text(reloadStatus, style = MiuixTheme.textStyles.footnote1)
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        TextButton(
+                            text = stringResource(if (reloading) R.string.module_reload_running else R.string.module_reload_action),
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = reloadAvailable && !reloading,
+                            textStyle = MiuixTheme.textStyles.main.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            onClick = onReload
+                        )
                     }
                 }
             }
@@ -135,7 +177,7 @@ fun MainScreen(
                         Column(Modifier.weight(1f)) {
                             Text(
                                 stringResource(R.string.yuki),
-                                style = MiuixTheme.textStyles.main.copy(
+                                style = MiuixTheme.textStyles.headline1.copy(
                                     fontWeight = FontWeight.Medium
                                 ),
                             )
@@ -157,5 +199,17 @@ fun MainScreen(
 @Preview(uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MainScreenPreview() {
-    BetterMiuiExpressTheme { MainScreen(false, "LSPosed", 102, "1.5.0", {}) }
+    BetterMiuiExpressTheme {
+        MainScreen(
+            isModuleActive = true,
+            frameworkName = "LSPosed",
+            frameworkApiLevel = 102,
+            yukiVersion = "1.5.0",
+            reloadAvailable = true,
+            reloading = false,
+            reloadStatus = "",
+            onReload = {},
+            onOpenLink = {}
+        )
+    }
 }
